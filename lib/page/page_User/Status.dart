@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 
 class StatusPage extends StatefulWidget {
   const StatusPage({super.key});
@@ -24,6 +25,40 @@ class _StatusPageState extends State<StatusPage> {
               Navigator.of(context).pop();
             },
           ),
+          actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
         ),
         body: SingleChildScrollView(
           

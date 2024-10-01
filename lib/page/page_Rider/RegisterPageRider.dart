@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Import for input formatters
 import 'dart:io';
 
 class RegisterPageRider extends StatefulWidget {
@@ -9,7 +10,21 @@ class RegisterPageRider extends StatefulWidget {
 }
 
 class _RegisterPageRiderState extends State<RegisterPageRider> {
-  File? _image; // ตัวแปรสำหรับเก็บรูปที่เลือก
+  File? _image; // Variable to hold the selected image
+  var fullnameCtl = TextEditingController();
+  var phoneCtl = TextEditingController();
+  var passwordCtl = TextEditingController();
+  var confirmpassCtl = TextEditingController();
+
+  @override
+  // void dispose() {
+  //   fullnameCtl.dispose();
+  //   phoneCtl.dispose();
+  //   emailCtl.dispose();
+  //   passwordCtl.dispose();
+  //   confirmpassCtl.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +33,10 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
         backgroundColor: const Color.fromARGB(255, 11, 102, 35),
         title: const Text(
           'Register Rider',
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -43,7 +56,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    // controller: emailCtl,
+                    // Controller for full name
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(width: 1),
@@ -53,38 +66,41 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Phone',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    // controller: passwordCtl,
-                    obscureText: true,
+                    controller: phoneCtl, // Set the controller
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                    ],
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
+                        borderSide: const BorderSide(width: 1),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Password',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    // controller: passwordCtl,
+                    controller: passwordCtl, // Set the controller
                     obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -95,46 +111,38 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                 ],
               ),
             ),
-            //        Padding(
-            //   padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       const SizedBox(height: 10),
-            //       Center(
-            //         child: _image == null
-            //             ? const Text('No image selected.')
-            //             : Image.file(
-            //                 _image!,
-            //                 width: 150,
-            //                 height: 150,
-            //               ),
-            //       ),
-            //       const SizedBox(height: 10),
-            //       Center(
-            //         child: ElevatedButton(
-            //           onPressed: (){},
-            //           style: ElevatedButton.styleFrom(
-            //             backgroundColor: const Color.fromARGB(255, 50, 142, 53),
-            //           ),
-            //           child: const Text('Attach Image'),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
+                    'Confirm Password',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    controller: confirmpassCtl, // Set the controller
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
                     'Car registration',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    // controller: passwordCtl,
-                    obscureText: true,
+                    // Assuming you want this field to be text only
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(width: 1),
@@ -153,8 +161,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     // Add register logic here
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color.fromARGB(255, 50, 142, 53),
+                    backgroundColor: const Color.fromARGB(255, 50, 142, 53),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
                   child: const Text(

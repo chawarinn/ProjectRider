@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mini_project_rider/page/page_User/Location.dart';
 
 class RegisterPageUser extends StatefulWidget {
   const RegisterPageUser({super.key});
@@ -8,6 +10,13 @@ class RegisterPageUser extends StatefulWidget {
 }
 
 class _RegisterPageUserState extends State<RegisterPageUser> {
+  var fullnameCtl = TextEditingController();
+  var phoneCtl = TextEditingController();
+  var passwordCtl = TextEditingController();
+  var confirmpassCtl = TextEditingController();
+
+  @override
+  
   
   @override
   Widget build(BuildContext context) {
@@ -49,13 +58,37 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
                 ],
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Phone',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    controller: phoneCtl, // Set the controller
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                    ],
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Phone',
+                    'Password',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
@@ -76,7 +109,7 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Password',
+                    'Confirm Password',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
@@ -112,16 +145,25 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
                 ],
               ),
             ),
-            
-   const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Row(
                 children: [
                   Spacer(),
-                  Icon(
+                  GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LocationPage(),
+                                ),
+                              );
+                            },
+                  child:  Icon(
                     Icons.add_location_alt_rounded, 
                     color: Colors.red,
                     size: 30,
+                  ),
                   ),
                 ],
               ),

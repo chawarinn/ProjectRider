@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
-import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
 
-class OrderPage extends StatefulWidget {
-  const OrderPage({super.key});
+class OrderReceiver extends StatefulWidget {
+  const OrderReceiver({super.key});
 
   @override
-  State<OrderPage> createState() => _OrderPageState();
+  State<OrderReceiver> createState() => _OrderReceiverState();
 }
 
-class _OrderPageState extends State<OrderPage> {
+class _OrderReceiverState extends State<OrderReceiver> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +25,7 @@ class _OrderPageState extends State<OrderPage> {
             Navigator.of(context).pop();
           },
         ),
-         actions: [
+      actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
             onPressed: () {
@@ -72,9 +72,9 @@ class _OrderPageState extends State<OrderPage> {
                 height: 50,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).push(
+                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const OrderReceiver(),
+                        builder: (context) => const OrderPage(),
                       ),
                     );
                   },
@@ -87,7 +87,7 @@ class _OrderPageState extends State<OrderPage> {
                     ),
                   ),
                   child: const Text(
-                    'Receiver',
+                    'Sender',
                     style: TextStyle(fontSize: 16.0),
                   ),
                 ),
