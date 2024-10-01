@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -95,9 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Add login logic here
-                    },
+                    onPressed: LoginPage,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 50, 142, 53),
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -119,4 +118,13 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+   LoginPage(){
+     Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const SearchPage(), 
+                        ),
+                      );
+   }
 }

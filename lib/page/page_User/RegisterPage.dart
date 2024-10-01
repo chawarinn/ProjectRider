@@ -8,6 +8,7 @@ class RegisterPageUser extends StatefulWidget {
 }
 
 class _RegisterPageUserState extends State<RegisterPageUser> {
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +26,133 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
             },
           ),
         ),
-        body: SingleChildScrollView()
+        body: SingleChildScrollView(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 60, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Name',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    // controller: emailCtl,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Phone',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    // controller: passwordCtl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Password',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    // controller: passwordCtl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Address',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                  TextField(
+                    // controller: passwordCtl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+   const Padding(
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: Row(
+                children: [
+                  Spacer(),
+                  Icon(
+                    Icons.add_location_alt_rounded, 
+                    color: Colors.red,
+                    size: 30,
+                  ),
+                ],
+              ),
+            ),     
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 30),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Add register logic here
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        const Color.fromARGB(255, 50, 142, 53),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                  ),
+                  child: const Text(
+                    'Register',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

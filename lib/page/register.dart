@@ -50,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              RegisterPageRider(), 
+                              const RegisterPageRider(), 
                         ),
                       );
                     },
@@ -62,11 +62,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Column(
                             children: [
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(10, 30, 10, 10),
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
                                 child: Text(
                                   "Rider",
                                   style: TextStyle(
@@ -76,6 +76,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ),
                               ),
+
+              Image.asset(
+                'assets/images/Delivery.png',
+                width: 100,  
+                height: 100, 
+              ),
                             ],
                           ),
                         ),
@@ -90,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => RegisterPageUser(), // หน้าปลายทาง
+          builder: (context) => const RegisterPageUser(), // หน้าปลายทาง
         ),
       );
     },
@@ -102,11 +108,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),
-                        child: const Center(
+                        child:  Center(
                           child: Column(
                             children: [
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(10, 30, 10, 10),
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
                                 child: Text(
                                   "User",
                                   style: TextStyle(
@@ -116,8 +122,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ),
                               ),
+
+              Image.asset(
+                'assets/images/Person.webp',
+                width: 100,  
+                height: 100, 
+              ),
                             ],
                           ),
+                          
                         ),
                       ),
                     ),

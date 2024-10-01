@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class LocationPage extends StatefulWidget {
+  const LocationPage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<LocationPage> createState() => _LocationPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _LocationPageState extends State<LocationPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+      return Scaffold(
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 11, 102, 35),
           title: const Text(
-            'Profile',
+            'Location',
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
           ),
           leading: IconButton(

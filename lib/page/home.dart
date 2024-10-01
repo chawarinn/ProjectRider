@@ -17,29 +17,39 @@ class _homeLogoPageState extends State<homeLogoPage> {
       canPop: false,
       child: Scaffold(
         backgroundColor: Color.fromARGB(255, 146, 189, 150),
-        body: Column(
+         body: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
                 child: Row(
-                   mainAxisAlignment:MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(
-                            height: 30), 
+                        const SizedBox(height: 100),
+                        Text(
+                          "Rider Delivery",
+                           style: TextStyle(fontSize: 40),
+                        ),
+                        const SizedBox(height: 30),
+                        Image.asset(
+                          'assets/images/deliveryLogo.png', 
+                          width: 300, 
+                          height: 300,
+                        ),
+                        const SizedBox(height: 40),
                         SizedBox(
                           width: 200,
                           height: 50,
                           child: TextButton(
                             onPressed: () {
                               Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginPage(),
-                            ));
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
                             },
                             style: TextButton.styleFrom(
                               backgroundColor:
@@ -56,21 +66,22 @@ class _homeLogoPageState extends State<homeLogoPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20), 
+                        const SizedBox(height: 20),
                         SizedBox(
                           width: 200,
                           height: 50,
                           child: OutlinedButton(
-                            onPressed: (){
-                            Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegisterPage(),
-                            ));},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegisterPage(),
+                                ),
+                              );
+                            },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.black,
-                              backgroundColor:
-                                  const Color.fromARGB(0, 206, 199, 198),
+                              backgroundColor: Colors.transparent,
                               side: const BorderSide(
                                 color: Color.fromARGB(255, 50, 142, 53),
                                 width: 2.0,
@@ -96,13 +107,5 @@ class _homeLogoPageState extends State<homeLogoPage> {
         ),
       ),
     );
-  }
-
-  login() {
-  
-  }
-
-  register() {
-   
   }
 }
