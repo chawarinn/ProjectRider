@@ -11,6 +11,13 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+   int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   @override
   Widget build(BuildContext context) {
   return Scaffold(
@@ -108,6 +115,31 @@ class _SearchPageState extends State<SearchPage> {
             ],
           ),
         ),
+      ),
+       bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.motorcycle),
+            label: 'Rider',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        onTap: _onItemTapped,
       ),
     );
   }
