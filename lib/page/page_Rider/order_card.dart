@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/page_Rider/GpsMap.dart';
+import 'package:mini_project_rider/page/page_User/ConfirmOrder.dart';
 
 class OrderCard extends StatefulWidget {
   const OrderCard({super.key});
@@ -176,9 +178,8 @@ class _OrderCardState extends State<OrderCard> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(); 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('คุณได้ทำการรับงานเรียบร้อยแล้ว!')),
-                    );
+                    ConfrimOrder();
+                    
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: Color.fromARGB(255, 255, 255, 255), backgroundColor:  Color.fromARGB(255, 178, 178, 178), 
@@ -191,6 +192,14 @@ class _OrderCardState extends State<OrderCard> {
           ],
         );
       },
+    );
+  }
+  void ConfrimOrder() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const GPSandMapPage(),
+      ),
     );
   }
 }  
