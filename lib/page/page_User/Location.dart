@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 
 class LocationPage extends StatefulWidget {
   const LocationPage({super.key});
@@ -31,36 +32,66 @@ class _LocationPageState extends State<LocationPage> {
               Navigator.of(context).pop();
             },
           ),
-        ),
-        body: SingleChildScrollView(
-          
-        ),
-         bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.motorcycle),
-            label: 'Rider',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+          actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        onTap: _onItemTapped,
+        ),
+       body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search Address', 
+                  prefixIcon: const Icon(Icons.search), 
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10), 
+                    borderSide: const BorderSide(
+                      width: 1,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+              
+            ],
+          ),
+        ),
       ),
-        
-      );
+    );
   }
+ 
 }

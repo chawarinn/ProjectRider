@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,6 +32,40 @@ class _ProfilePageState extends State<ProfilePage> {
               Navigator.of(context).pop();
             },
           ),
+           actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
         ),
         body: SingleChildScrollView(
           

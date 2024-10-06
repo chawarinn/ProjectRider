@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
   const ConfrimOrderPage({super.key});
@@ -31,6 +32,40 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
             Navigator.of(context).pop();
           },
         ),
+ actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -104,45 +139,53 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
-               Text(
-                            'เพิ่มรูปภาพประกอบสถานะ',
-                            style: TextStyle(
-                              fontSize: 18,
-                            ),
-                          ),
-              const SizedBox(height: 20),
+          const SizedBox(height: 60),
+Text(
+  'เพิ่มรูปภาพประกอบสถานะ',
+  style: TextStyle(
+    fontSize: 18,
+  ),
+),
+const SizedBox(height: 20),
+Center(
+  child: SizedBox(
+    width: 400,
+    height: 100,
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      elevation: 5,
+      child: Center(  // ใช้ Center เพื่อให้ IconButton อยู่ตรงกลาง
+        child: IconButton(
+          icon: const Icon(Icons.add_a_photo, size: 40),
+          onPressed: () {
+          },
+        ),
+      ),
+    ),
+  ),
+),const SizedBox(height: 20),
               Center(
                 child: SizedBox(
-                  width: 400,
-                  height: 100,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
+                  width: 100,
+                  height: 50,
+                  child: TextButton(
+                    onPressed: () {
+                      _Confirm(context); // เรียกใช้ _Confirm แทน ConfirmOrder
+                    },
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 50, 142, 53),
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
                     ),
-                    elevation: 5,
-                   
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 100,
-                height: 50,
-                child: TextButton(
-                  onPressed: ConfrimOrder,
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 50, 142, 53),
-                    foregroundColor: Colors.black,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(fontSize: 16.0),
                     ),
-                  ),
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(fontSize: 16.0),
                   ),
                 ),
               ),
@@ -179,91 +222,62 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
     
   }
 
-  void _showAddProductDialog(BuildContext context) {
+  void _Confirm(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          content: SizedBox(
-            width: 400,
-            height: 350,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: SizedBox(
-                    width: 200,
-                    height: 200,
-                    child: Card(
-                      color: const Color.fromARGB(255, 220, 220, 220),
-                      child: IconButton(
-                        icon: const Icon(Icons.add_a_photo, size: 40),
-                        onPressed: () {},
-                      ),
-                    ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Text(
+                  "ยืนยันการส่งสินค้า",
+                  style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                   ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Detail :',
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                      ),
-                      SizedBox(height: 10), // เพิ่มระยะห่าง
-                      TextField(
-                        obscureText: false,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(width: 1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+              
+            ],
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 50, 142, 53),
-                foregroundColor: Colors.black,
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // ทำให้ปุ่มห่างกัน
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ปิด AlertDialog
+                },
+                child: const Text(
+                  'No',
+                  style: TextStyle(fontSize: 18, color: Colors.black),
                 ),
               ),
-              child: const Text(
-                'OK',
-                style: TextStyle(fontSize: 18, color: Colors.black),
+              TextButton(
+                onPressed: () {
+         
+                  Navigator.of(context).pop(); // ปิด AlertDialog หลังจากบันทึก
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 50, 142, 53),
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                ),
+                child: const Text(
+                  'Yes',
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
               ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  ConfrimOrder() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ConfrimOrderPage(),
-      ),
-    );
-  }
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
 }

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/AddOrder.dart';
 
 class SearchPage extends StatefulWidget {
@@ -20,15 +21,55 @@ class _SearchPageState extends State<SearchPage> {
   }
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-          title: const Text(
-            'Search',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Search',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-       body: SingleChildScrollView(
+             leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -36,10 +77,10 @@ class _SearchPageState extends State<SearchPage> {
             children: [
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search Phone', 
-                  prefixIcon: const Icon(Icons.search), 
+                  hintText: 'Search Phone',
+                  prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), 
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(
                       width: 1,
                       color: Colors.grey,
@@ -47,28 +88,27 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20), 
+              const SizedBox(height: 20),
               SizedBox(
-                  width: 400,
-                  height: 110,
+                width: 400,
+                height: 110,
                 child: Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0), 
+                    borderRadius: BorderRadius.circular(15.0),
                   ),
-                  elevation: 5, 
+                  elevation: 5,
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Row(
                       children: [
-                             ClipOval(
-                  child: Image.asset(
-                    'assets/images/Delivery.png',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover, 
-                  ),
-                ),
-                
+                        ClipOval(
+                          child: Image.asset(
+                            'assets/images/Delivery.png',
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                         const SizedBox(width: 20),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,32 +121,30 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             ),
                             Text('Phone : 09999999999'),
-                            
                           ],
                         ),
-                         const Spacer(),
+                        const Spacer(),
                         SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: OutlinedButton(
-                              onPressed: AddOrder,
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.black,
-                
-                                padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
+                          width: 50,
+                          height: 50,
+                          child: OutlinedButton(
+                            onPressed: AddOrder,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
                               ),
-                              child: Image.asset(
-                    'assets/images/package.png',
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover, 
-                  ),
+                            ),
+                            child: Image.asset(
+                              'assets/images/package.png',
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -143,13 +181,13 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
-  AddOrder(){
+
+  AddOrder() {
     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const AddOrderPage(), 
-                        ),
-                      );
-   }
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddOrderPage(),
+      ),
+    );
+  }
 }

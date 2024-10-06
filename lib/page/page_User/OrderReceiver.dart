@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
-import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
 
-class OrderPage extends StatefulWidget {
-  const OrderPage({super.key});
+class OrderReceiver extends StatefulWidget {
+  const OrderReceiver({super.key});
 
   @override
-  State<OrderPage> createState() => _OrderPageState();
+  State<OrderReceiver> createState() => _OrderReceiverState();
 }
 
-class _OrderPageState extends State<OrderPage> {
-   int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+class _OrderReceiverState extends State<OrderReceiver> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +25,7 @@ class _OrderPageState extends State<OrderPage> {
             Navigator.of(context).pop();
           },
         ),
-         actions: [
+      actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
             onPressed: () {
@@ -79,9 +72,9 @@ class _OrderPageState extends State<OrderPage> {
                 height: 50,
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).push(
+                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const OrderReceiver(),
+                        builder: (context) => const OrderPage(),
                       ),
                     );
                   },
@@ -94,7 +87,7 @@ class _OrderPageState extends State<OrderPage> {
                     ),
                   ),
                   child: const Text(
-                    'Receiver',
+                    'Sender',
                     style: TextStyle(fontSize: 16.0),
                   ),
                 ),
@@ -185,31 +178,6 @@ class _OrderPageState extends State<OrderPage> {
             ],
           ),
         ),
-      ),
-       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.motorcycle),
-            label: 'Rider',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        onTap: _onItemTapped,
       ),
     );
   }

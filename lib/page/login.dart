@@ -9,7 +9,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  var emailCtl = TextEditingController();
+  var phoneCtl = TextEditingController();
   var passwordCtl = TextEditingController();
 
   @override
@@ -56,11 +56,11 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Email',
+                      'Phone',
                       style: TextStyle(fontSize: 18, color: Colors.black),
                     ),
                     TextField(
-                      controller: emailCtl,
+                      controller: phoneCtl,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(
                           borderSide: BorderSide(width: 1),
@@ -83,6 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: passwordCtl,
                       obscureText: true,
                       decoration: const InputDecoration(
+                         prefixIcon: Icon(Icons.lock),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(width: 1),
                         ),
