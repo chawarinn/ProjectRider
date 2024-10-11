@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/GpsMap.dart';
 import 'package:mini_project_rider/page/page_User/ConfirmOrder.dart';
 
@@ -35,6 +36,62 @@ class _OrderCardState extends State<OrderCard> {
             Navigator.pop(context); // ปุ่มย้อนกลับไปหน้าก่อนหน้า
           },
         ),
+          actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+            bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+       
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -126,28 +183,6 @@ class _OrderCardState extends State<OrderCard> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-         
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        onTap: _onItemTapped,
       ),
     );
   }

@@ -16,7 +16,7 @@ class _homeLogoPageState extends State<homeLogoPage> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: Color.fromARGB(255, 146, 189, 150),
+        backgroundColor: const Color.fromARGB(255, 146, 189, 150),
          body: Column(
           children: [
             Expanded(
@@ -28,7 +28,7 @@ class _homeLogoPageState extends State<homeLogoPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 100),
-                        Text(
+                        const Text(
                           "Rider Delivery",
                            style: TextStyle(fontSize: 40),
                         ),

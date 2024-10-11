@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mini_project_rider/page/home.dart';
 
 class GPSandMapPage extends StatefulWidget {
   const GPSandMapPage({super.key});
@@ -36,9 +37,65 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context); // ปุ่มย้อนกลับไปหน้าก่อนหน้า
+            Navigator.pop(context); 
           },
         ),
+           actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const homeLogoPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+            bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+       
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
       body: Column(
         children: [
@@ -104,7 +161,7 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
                   onPressed: () {
                     // Save image logic
                   },
-                  child: const Text('บันทึก'),
+                  child: const Text('Save'),
                 ),
               ],
             ),
@@ -135,7 +192,7 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
                   onPressed: () {
                     
                   },
-                  child: const Text('บันทึก'),
+                  child: const Text('Save'),
                 ),
               ],
             ),
@@ -153,34 +210,12 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
                 ),
                 
                 child: const Text(
-                  'รับงาน',
+                  'Success',
                   style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 22, 12, 12)),
                 ),
               ),
             ),
         ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-         
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        onTap: _onItemTapped,
       ),
     );
   }

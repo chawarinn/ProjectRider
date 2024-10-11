@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -9,13 +12,37 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-   int _selectedIndex = 0;
+   int _selectedIndex = 3; 
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+ void _onItemTapped(int _selectedIndex) {
+    switch (_selectedIndex) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,13 +52,13 @@ class _ProfilePageState extends State<ProfilePage> {
             'Profile',
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.black),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
+          // leading: IconButton(
+          //   icon: const Icon(Icons.arrow_back_ios_new_rounded,
+          //       color: Colors.black),
+          //   onPressed: () {
+          //     Navigator.of(context).pop();
+          //   },
+          // ),
            actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
@@ -67,10 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
         ),
-        body: SingleChildScrollView(
-          
-        ),
-         bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.motorcycle),
@@ -92,9 +116,12 @@ class _ProfilePageState extends State<ProfilePage> {
         currentIndex: _selectedIndex,
         selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
         unselectedItemColor: Colors.grey,
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
+        body: SingleChildScrollView(
+          
+        ),
       );
   }
 }

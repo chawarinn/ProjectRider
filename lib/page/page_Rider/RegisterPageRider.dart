@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import for input formatters
+import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart'; 
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart'; 
 
 class RegisterPageRider extends StatefulWidget {
   const RegisterPageRider({super.key});
@@ -10,20 +13,61 @@ class RegisterPageRider extends StatefulWidget {
 }
 
 class _RegisterPageRiderState extends State<RegisterPageRider> {
-  File? _image; // Variable to hold the selected image
+  File? _image; 
   var fullnameCtl = TextEditingController();
   var phoneCtl = TextEditingController();
   var passwordCtl = TextEditingController();
   var confirmpassCtl = TextEditingController();
+  var numberCtl = TextEditingController(); 
 
-  @override
-  // void dispose() {
-  //   fullnameCtl.dispose();
-  //   phoneCtl.dispose();
-  //   emailCtl.dispose();
-  //   passwordCtl.dispose();
-  //   confirmpassCtl.dispose();
-  //   super.dispose();
+  // Function to pick an image
+  // Future<void> _pickImage() async {
+  //   final ImagePicker _picker = ImagePicker();
+  //   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    
+  //   if (image != null) {
+  //     setState(() {
+  //       _image = File(image.path);
+  //     });
+  //   }
+  // }
+
+  // Function to register the rider
+  // Future<void> _registerRider() async {
+  //   final value = await http.post(Uri.parse('$API_ENDPOINT/registerrider'); // Replace with your backend URL
+  //   final request = http.MultipartRequest('POST', uri);
+
+  //   request.fields['name'] = fullnameCtl.text;
+  //   request.fields['phone'] = phoneCtl.text;
+  //   request.fields['password'] = passwordCtl.text;
+  //   request.fields['confirmPassword'] = confirmpassCtl.text;
+  //   request.fields['number'] = numberCtl.text; // Car registration number
+
+  //   if (_image != null) {
+  //     request.files.add(await http.MultipartFile.fromPath('file', _image!.path));
+  //   }
+
+  //   try {
+  //     final response = await request.send();
+  //     if (response.statusCode == 201) {
+  //       final responseData = await http.Response.fromStream(response);
+  //       // Handle successful registration
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Registration successful!')),
+  //       );
+  //     } else {
+  //       final responseData = await http.Response.fromStream(response);
+  //       // Handle error response
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Registration failed: ${responseData.body}')),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("Error: $e");
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('An error occurred. Please try again.')),
+  //     );
+  //   }
   // }
 
   @override
@@ -46,6 +90,31 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 20),
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 100,
+                    backgroundImage: _image != null ? FileImage(_image!) : const AssetImage('assets/images/Profile2.jpg') as ImageProvider,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 10,
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: const Color.fromRGBO(232, 234, 237, 1),
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt, color: Colors.black),
+                        onPressed:(){}
+                        // onPressed: _pickImage, // Select image
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 60, 20, 10),
               child: Column(
@@ -55,15 +124,18 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     'Name',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
-                  TextField(
-                    // Controller for full name
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
                 ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: TextField(
+                controller: fullnameCtl,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(width: 1),
+                  ),
+                ),
               ),
             ),
             Padding(
@@ -76,10 +148,10 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    controller: phoneCtl, // Set the controller
+                    controller: phoneCtl,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                      FilteringTextInputFormatter.digitsOnly,
                     ],
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -100,7 +172,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    controller: passwordCtl, // Set the controller
+                    controller: passwordCtl,
                     obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -121,7 +193,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    controller: confirmpassCtl, // Set the controller
+                    controller: confirmpassCtl,
                     obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -142,7 +214,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                   TextField(
-                    // Assuming you want this field to be text only
+                    controller: numberCtl, // Car registration number
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(width: 1),
@@ -157,9 +229,8 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add register logic here
-                  },
+                  onPressed:(){},
+                  // onPressed: _registerRider, // Call the register function
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 50, 142, 53),
                     padding: const EdgeInsets.symmetric(vertical: 15),

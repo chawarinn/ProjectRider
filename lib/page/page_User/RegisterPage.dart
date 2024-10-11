@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mini_project_rider/page/page_User/Location.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class RegisterPageUser extends StatefulWidget {
   const RegisterPageUser({super.key});
@@ -12,17 +16,40 @@ class RegisterPageUser extends StatefulWidget {
 class _RegisterPageUserState extends State<RegisterPageUser> {
    int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
   var fullnameCtl = TextEditingController();
   var phoneCtl = TextEditingController();
   var passwordCtl = TextEditingController();
   var confirmpassCtl = TextEditingController();
 
-  @override
+      void _onItemTapped(int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
+  }
+
   
   
   @override
@@ -45,6 +72,30 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
         body: SingleChildScrollView(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+                  const SizedBox(height: 20),
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const CircleAvatar(
+                    radius: 100,
+                    backgroundImage: AssetImage('assets/images/Profile2.jpg'),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 10,
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: const Color.fromRGBO(232, 234, 237, 1),
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt, color: Colors.black),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 60, 20, 10),
               child: Column(
@@ -201,31 +252,6 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
             ),
           ],
         ),
-      ),
-       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.motorcycle),
-            label: 'Rider',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        onTap: _onItemTapped,
       ),
     );
   }
