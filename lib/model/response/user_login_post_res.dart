@@ -35,7 +35,6 @@ class User {
     String password;
     String photo;
     String address;
-    String map;
 
     User({
         required this.userId,
@@ -44,7 +43,6 @@ class User {
         required this.password,
         required this.photo,
         required this.address,
-        required this.map,
     });
 
     factory User.fromJson(Map<String, dynamic> json) => User(
@@ -54,7 +52,6 @@ class User {
         password: json["password"],
         photo: json["photo"],
         address: json["address"],
-        map: json["map"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -64,6 +61,5 @@ class User {
         "password": password,
         "photo": photo,
         "address": address,
-        "map": map,
     };
 }

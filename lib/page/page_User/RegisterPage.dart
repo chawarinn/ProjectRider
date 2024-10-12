@@ -1,10 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'dart:developer';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:latlong2/latlong.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/page/login.dart';
 import 'package:mini_project_rider/page/page_User/Location.dart';
-import 'package:mini_project_rider/page/page_User/Order.dart';
-import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
-import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
-import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class RegisterPageUser extends StatefulWidget {
   const RegisterPageUser({super.key});
@@ -14,72 +19,210 @@ class RegisterPageUser extends StatefulWidget {
 }
 
 class _RegisterPageUserState extends State<RegisterPageUser> {
-   int _selectedIndex = 0;
+  File? _image;
+  final fullnameCtl = TextEditingController();
+  final phoneCtl = TextEditingController();
+  final passwordCtl = TextEditingController();
+  final confirmpassCtl = TextEditingController();
+  final addressCtl = TextEditingController();
+  var db = FirebaseFirestore.instance;
 
-  var fullnameCtl = TextEditingController();
-  var phoneCtl = TextEditingController();
-  var passwordCtl = TextEditingController();
-  var confirmpassCtl = TextEditingController();
+  String? selectedLocation;
+  double? selectedLatitude;
+  double? selectedLongitude;
 
-      void _onItemTapped(int index) {
-    switch (index) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
-        );
-        break;
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      _showAlertDialog(context, "Image selection failed: $e");
     }
   }
 
-  
-  
+  Future<void> _registerRider(BuildContext context) async {
+    if (fullnameCtl.text.isEmpty ||
+        phoneCtl.text.isEmpty ||
+        passwordCtl.text.isEmpty ||
+        confirmpassCtl.text.isEmpty ||
+        addressCtl.text.isEmpty) {
+      _showAlertDialog(context, "กรอกข้อมูลไม่ครบ");
+      return;
+    }
+
+    if (passwordCtl.text != confirmpassCtl.text) {
+      _showAlertDialog(context, "รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+
+    if (_image == null) {
+      _showAlertDialog(context, "กรุณาเพิ่มรูปโปรไฟล์");
+      return;
+    }
+
+    var uri = Uri.parse("$API_ENDPOINT/registerU");
+    var request = http.MultipartRequest('POST', uri);
+
+    var imageStream = http.ByteStream(_image!.openRead());
+    var imageLength = await _image!.length();
+    var multipartFile = http.MultipartFile(
+      'file',
+      imageStream,
+      imageLength,
+      filename: path.basename(_image!.path),
+    );
+
+    request.files.add(multipartFile);
+    request.fields['name'] = fullnameCtl.text;
+    request.fields['phone'] = phoneCtl.text;
+    request.fields['password'] = passwordCtl.text;
+    request.fields['confirmPassword'] = confirmpassCtl.text;
+    request.fields['address'] = addressCtl.text;
+
+    try {
+      var response = await request.send();
+      if (response.statusCode == 201) {
+        int newUserId = await generateNewRiderId();
+
+        // Only proceed if location is selected
+        if (selectedLatitude != null && selectedLongitude != null) {
+          var data = {
+            'id': newUserId,
+            'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
+          };
+
+          await db.collection('address').doc(newUserId.toString()).set(data);
+          log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
+        }
+
+        _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        });
+      } else {
+        _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}");
+      }
+    } catch (e) {
+      _showAlertDialog(context, "Error during registration: $e");
+    }
+  }
+
+  void _showAlertDialog(BuildContext context, String message, {VoidCallback? onOkPressed}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Notification"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (onOkPressed != null) {
+                  onOkPressed();
+                }
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {bool obscureText = false, TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, color: Colors.black),
+          ),
+          TextField(
+            controller: controller,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            inputFormatters: obscureText ? [] : [], // เปลี่ยนเป็น empty array
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderSide: const BorderSide(width: 1),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<int> generateNewRiderId() async {
+    QuerySnapshot querySnapshot = await db
+        .collection('rider')
+        .orderBy('id', descending: true)
+        .limit(1)
+        .get(); // ดึงเอกสารล่าสุดตามลำดับตัวเลขที่ลดลง
+
+    if (querySnapshot.docs.isNotEmpty) {
+      int lastId = querySnapshot.docs.first['id']; // ดึง ID ล่าสุดจากเอกสาร
+      return lastId + 1; // สร้าง ID ใหม่โดยเพิ่ม 1
+    } else {
+      return 1; // ถ้ายังไม่มีเอกสาร ให้เริ่มที่ 1
+    }
+  }
+
+  void _selectLocation() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LocationPage(),
+      ),
+    );
+    if (result != null && result is LatLng) {
+      setState(() {
+        selectedLatitude = result.latitude;
+        selectedLongitude = result.longitude;
+        selectedLocation = "$selectedLatitude, $selectedLongitude";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-          title: const Text(
-            'Register User',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.black),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Register User',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-        body: SingleChildScrollView(child: Column(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-                  const SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 100,
-                    backgroundImage: AssetImage('assets/images/Profile2.jpg'),
+                    backgroundImage: _image != null
+                        ? FileImage(_image!)
+                        : const AssetImage('assets/images/Profile.png') as ImageProvider,
                   ),
                   Positioned(
                     bottom: 0,
@@ -89,163 +232,63 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
                       backgroundColor: const Color.fromRGBO(232, 234, 237, 1),
                       child: IconButton(
                         icon: const Icon(Icons.camera_alt, color: Colors.black),
-                        onPressed: () {},
+                        onPressed: _pickImage,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 60, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Name',
-                    style: TextStyle(fontSize: 18, color: Colors.black),
-                  ),
-                  TextField(
-                    // controller: emailCtl,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildTextField('Name', fullnameCtl),
+            _buildTextField('Phone', phoneCtl, keyboardType: TextInputType.phone),
+            _buildTextField('Password', passwordCtl, obscureText: true),
+            _buildTextField('Confirm Password', confirmpassCtl, obscureText: true),
+            _buildTextField('Address', addressCtl),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Phone',
-                    style: TextStyle(fontSize: 18, color: Colors.black),
-                  ),
-                  TextField(
-                    controller: phoneCtl, // Set the controller
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // Only allow digits
-                    ],
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Password',
-                    style: TextStyle(fontSize: 18, color: Colors.black),
-                  ),
-                  TextField(
-                    // controller: passwordCtl,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Confirm Password',
-                    style: TextStyle(fontSize: 18, color: Colors.black),
-                  ),
-                  TextField(
-                    // controller: passwordCtl,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Address',
-                    style: TextStyle(fontSize: 18, color: Colors.black),
-                  ),
-                  TextField(
-                    // controller: passwordCtl,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: Row(
                 children: [
-                  Spacer(),
-                  GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const LocationPage(),
-                                ),
-                              );
-                            },
-                  child:  Icon(
-                    Icons.add_location_alt_rounded, 
-                    color: Colors.red,
-                    size: 30,
-                  ),
-                  ),
+                  const Spacer(),
+                  if (selectedLocation != null) ...[
+                    Text(
+                      selectedLocation!,
+                      style: const TextStyle(fontSize: 12, color: Colors.red),
+                    ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _selectLocation,
+                      child: const Icon(
+                        Icons.add_location_alt_rounded,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ),
+                  ] else ...[
+                    GestureDetector(
+                      onTap: _selectLocation,
+                      child: const Icon(
+                        Icons.add_location_alt_rounded,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ),
+                  ],
                 ],
               ),
-            ),     
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 30),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Add register logic here
-                  },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color.fromARGB(255, 50, 142, 53),
+                    backgroundColor: const Color.fromARGB(255, 11, 102, 35),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
+                  onPressed: () => _registerRider(context),
                   child: const Text(
                     'Register',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.black,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
