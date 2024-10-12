@@ -4,6 +4,7 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Status.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -30,7 +31,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+<<<<<<< HEAD
       home: const homeLogoPage(),
+=======
+      home: ProfilePage()
+>>>>>>> 6bbe043b9584cd1db64e53479452ad4b4348a651
     );
   }
 }

@@ -6,14 +6,14 @@ import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+class Profileriderpage extends StatefulWidget {
+  const Profileriderpage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<Profileriderpage> createState() => _ProfileRiderPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfileRiderPageState extends State<Profileriderpage> {
   int _selectedIndex = 3; 
 
   void _onItemTapped(int _selectedIndex) {
@@ -39,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => Profileriderpage()),
         );
         break;
     }
