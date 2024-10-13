@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/ConfirmOrder.dart';
-import 'package:mini_project_rider/page/page_User/Order.dart';
-import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
-import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
-import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class AddOrderPage extends StatefulWidget {
   const AddOrderPage({super.key});
@@ -15,35 +11,12 @@ class AddOrderPage extends StatefulWidget {
 
 class _AddOrderPageState extends State<AddOrderPage> {
    int _selectedIndex = 0;
-    void _onItemTapped(int index) {
-    switch (index) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
-        );
-        break;
-    }
-  }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

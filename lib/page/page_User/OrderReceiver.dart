@@ -6,7 +6,8 @@ import 'package:mini_project_rider/page/page_User/Search.dart';
 import 'package:mini_project_rider/page/page_User/Status.dart';
 
 class OrderReceiver extends StatefulWidget {
-  const OrderReceiver({super.key});
+  final int userId;
+  const OrderReceiver({super.key,required this.userId});
 
   @override
   State<OrderReceiver> createState() => _OrderReceiverState();
@@ -20,25 +21,25 @@ int _selectedIndex = 2;
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
         );
         break;
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }
@@ -54,12 +55,7 @@ int _selectedIndex = 2;
           'Order',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-        //   onPressed: () {
-        //     Navigator.of(context).pop();
-        //   },
-        // ),
+       
       actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
@@ -134,7 +130,7 @@ int _selectedIndex = 2;
                   onPressed: () {
                      Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const OrderPage(),
+                        builder: (context) =>  OrderPage(userId: widget.userId),
                       ),
                     );
                   },
@@ -158,7 +154,7 @@ int _selectedIndex = 2;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StatusPage(selectedIndex: _selectedIndex = 2), // หน้าที่คุณต้องการไป
+        builder: (context) => StatusPage(selectedIndex: _selectedIndex = 2, userId: widget.userId), // หน้าที่คุณต้องการไป
       ),
     );
   },

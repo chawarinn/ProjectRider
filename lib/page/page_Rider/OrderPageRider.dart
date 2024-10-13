@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:mini_project_rider/page/page_User/AddOrder.dart';
 import 'package:mini_project_rider/page/page_Rider/order_card.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart'; // นำเข้า OrderCardPage
@@ -33,7 +34,7 @@ class _Orderpagerider extends State<Orderpagerider> {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => Profileriderpage()),
         );
         break;
     }

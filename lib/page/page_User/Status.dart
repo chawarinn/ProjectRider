@@ -7,8 +7,9 @@ import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class StatusPage extends StatefulWidget {
   final int selectedIndex;
+  final int userId;
 
-  const StatusPage({Key? key, required this.selectedIndex}) : super(key: key);
+  const StatusPage({Key? key, required this.selectedIndex,required this.userId}) : super(key: key);
 
   @override
   State<StatusPage> createState() => _StatusPageState();
@@ -33,25 +34,25 @@ class _StatusPageState extends State<StatusPage> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
         );
         break;
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
         );
         break;
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }

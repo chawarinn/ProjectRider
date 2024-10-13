@@ -6,7 +6,8 @@ import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
-  const ConfrimOrderPage({super.key});
+  final int userId;
+  const ConfrimOrderPage({super.key,required this.userId});
 
   @override
   State<ConfrimOrderPage> createState() => _ConfrimOrderPageState();
@@ -20,25 +21,25 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
         );
         break;
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }

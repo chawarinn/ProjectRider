@@ -251,15 +251,17 @@ class _LoginPageState extends State<LoginPage> {
 
       UsersLoginPostResponse users = usersLoginPostResponseFromJson(value.body);
       log(value.body);
-      log(users.user.userId.toString());
-      setState(() {
-        text = '';
-      });
+    int? userId = users.user?.userId; // Use nullable int to handle possible null value
+      if (userId == null) {
+        throw Exception('User ID is null'); // Handle case where userId is null
+      }
+      
+      log(userId.toString());
 
       Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const SearchPage(),
+            builder: (context) =>  SearchPage(userId: userId),
           ));
     } catch (error) {
       log(error.toString() + 'eiei');
