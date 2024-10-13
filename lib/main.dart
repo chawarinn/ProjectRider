@@ -31,11 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-<<<<<<< HEAD
       home: const homeLogoPage(),
-=======
-      home: ProfilePage()
->>>>>>> 6bbe043b9584cd1db64e53479452ad4b4348a651
     );
   }
 }
