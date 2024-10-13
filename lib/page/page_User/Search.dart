@@ -1,69 +1,23 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
-import 'package:mini_project_rider/config/config.dart';
-import 'package:mini_project_rider/config/internet_config.dart';
-import 'package:mini_project_rider/model/response/user_search_get_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/AddOrder.dart';
-import 'package:mini_project_rider/page/page_User/Order.dart';
-import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
-import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class SearchPage extends StatefulWidget {
-  int userId;
-  SearchPage({super.key ,required this.userId});
+  const SearchPage({super.key});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  int _selectedIndex = 0;
-  String _searchPhone = '';
-  List<UserSearchGetResponse> user = [];
-  bool _isLoading = false;
-  String _errorMessage = '';
-  late Future<void> loadData;
+   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-
-    Widget page;
-
-    switch (index) {
-      case 0:
-        page = SearchPage(userId: widget.userId);
-        break;
-      case 1:
-        page = OrderPage(userId: widget.userId);
-        break;
-      case 2:
-        page = OrderReceiver(userId: widget.userId);
-        break;
-      case 3:
-        page = ProfilePage(userId: widget.userId);
-        break;
-      default:
-        page = ProfilePage(userId: widget.userId);
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => page),
-    );
-  }
-
-  Future<void> loadDataAsync() async {
-    var config = await Configuration.getConfig();
-    var url = config['apiEndpoint'];
-    var response = await http.get(
-      Uri.parse('$url/users/userPhone?userID$widget.userID'),
-    );
-
-    user = userSearchGetResponseFromJson(response.body);
   }
   @override
   Widget build(BuildContext context) {
@@ -114,31 +68,6 @@ class _SearchPageState extends State<SearchPage> {
             },
           ),
         ],
-      ),
-         bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.motorcycle),
-            label: 'Rider',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -225,7 +154,31 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
       ),
-    
+       bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.motorcycle),
+            label: 'Rider',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        onTap: _onItemTapped,
+      ),
     );
   }
 
@@ -233,7 +186,7 @@ class _SearchPageState extends State<SearchPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>  AddOrderPage(userId: widget.userId),
+        builder: (context) => const AddOrderPage(),
       ),
     );
   }

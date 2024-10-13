@@ -19,28 +19,28 @@ class _ProfileRiderPageState extends State<Profileriderpage> {
   void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
       case 0:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => SearchPage()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage()),
+        );
         break;
       case 1:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => OrderPage()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage()),
+        );
         break;
       case 2:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => OrderReceiver()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver()),
+        );
         break;
       case 3:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => Profileriderpage()),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Profileriderpage()),
+        );
         break;
     }
   }

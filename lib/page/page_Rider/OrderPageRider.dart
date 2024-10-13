@@ -1,11 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:mini_project_rider/page/home.dart';
-import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:mini_project_rider/page/page_User/AddOrder.dart';
-import 'package:mini_project_rider/page/page_Rider/order_card.dart';
-import 'package:mini_project_rider/page/page_User/ProfilePage.dart'; // นำเข้า OrderCardPage
+import 'package:mini_project_rider/page/page_Rider/order_card.dart'; // นำเข้า OrderCardPage
 
 class Orderpagerider extends StatefulWidget {
   const Orderpagerider({super.key});
@@ -15,31 +12,13 @@ class Orderpagerider extends StatefulWidget {
 }
 
 class _Orderpagerider extends State<Orderpagerider> {
-   int _selectedIndex = 0; 
+  int _selectedIndex = 0;
 
- void _onItemTapped(int _selectedIndex) {
-    switch (_selectedIndex) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Orderpagerider()),
-        );
-        break;
-      // case 1:
-      //   Navigator.push(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => ),
-      //   );
-      //   break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Profileriderpage()),
-        );
-        break;
-    }
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -50,62 +29,6 @@ class _Orderpagerider extends State<Orderpagerider> {
           'Order',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-      actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const homeLogoPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-            bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-       
-          BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -200,6 +123,28 @@ class _Orderpagerider extends State<Orderpagerider> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+       
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        onTap: _onItemTapped,
       ),
     );
   }
