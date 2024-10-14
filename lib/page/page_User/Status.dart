@@ -1,38 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class StatusPage extends StatefulWidget {
-  const StatusPage({super.key});
+ int selectedIndex;
+ int userId;
+
+ StatusPage({Key? key, required this.userId, required this.selectedIndex}) : super(key: key);
 
   @override
   State<StatusPage> createState() => _StatusPageState();
 }
 
 class _StatusPageState extends State<StatusPage> {
-   int _selectedIndex = 0;
+
+  int? _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.selectedIndex; 
+  }
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _currentIndex = index;
     });
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
   }
+
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-          title: const Text(
-            'Status',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.black),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          actions: [
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Status',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
             onPressed: () {
@@ -51,7 +92,7 @@ class _StatusPageState extends State<StatusPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).push(
+                          Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => const homeLogoPage(),
                             ),
@@ -66,11 +107,8 @@ class _StatusPageState extends State<StatusPage> {
             },
           ),
         ],
-        ),
-        body: SingleChildScrollView(
-          
-        ),
-         bottomNavigationBar: BottomNavigationBar(
+      ),
+      bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.motorcycle),
@@ -89,12 +127,15 @@ class _StatusPageState extends State<StatusPage> {
             label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: _currentIndex!,
         selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
         unselectedItemColor: Colors.grey,
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
-      );
+      body: SingleChildScrollView(
+        
+      ),
+    );
   }
 }

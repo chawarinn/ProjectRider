@@ -2,7 +2,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/model/request/user_login_post_req.dart';
+import 'package:mini_project_rider/model/response/rider_login_post_res.dart';
 import 'package:mini_project_rider/model/response/user_login_post_res.dart';
 import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
@@ -237,43 +239,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void loginU() async {
-    if (phoneCtl.text.isEmpty || passwordCtl.text.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('ข้อมูลไม่ถูกต้อง',
-                style: TextStyle(
-                    color: Color.fromARGB(255, 255, 0, 0),
-                    fontWeight: FontWeight.bold)),
-            content: const Text('กรุณากรอกเบอร์โทรและรหัสผ่านให้ครบถ้วน'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('ตกลง',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
     log(phoneCtl.text);
     log(passwordCtl.text);
     try {
       var data = UsersLoginPostRequest(
           phone: phoneCtl.text, password: passwordCtl.text);
-      // var value = await http.post(Uri.parse('$API_ENDPOINT/login'),
-      var value = await http.post(Uri.parse('http://127.0.0.1:3000/loginU'),
+
+      var value = await http.post(Uri.parse('$API_ENDPOINT/loginU'),
           headers: {"Content-Type": "application/json; charset=utf-8"},
           body: usersLoginPostRequestToJson(data));
 
       UsersLoginPostResponse users = usersLoginPostResponseFromJson(value.body);
-
+      log(value.body);
+      log(users.user.userId.toString());
       setState(() {
         text = '';
       });
@@ -281,10 +259,10 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const OrderPage(),
+            builder: (context) =>  SearchPage(userId: users.user.userId),
           ));
-    } catch (eeee) {
-      log(eeee.toString() + 'eiei');
+    } catch (error) {
+      log(error.toString() + 'eiei');
 
       showDialog(
         context: context,
@@ -322,13 +300,13 @@ class _LoginPageState extends State<LoginPage> {
     try {
       var data = UsersLoginPostRequest(
           phone: phoneCtl.text, password: passwordCtl.text);
-      // var value = await http.post(Uri.parse('$API_ENDPOINT/login'),
-      var value = await http.post(Uri.parse('http://127.0.0.1:3000/loginR'),
+      var value = await http.post(Uri.parse('$API_ENDPOINT/loginR'),
           headers: {"Content-Type": "application/json; charset=utf-8"},
           body: usersLoginPostRequestToJson(data));
 
-      UsersLoginPostResponse users = usersLoginPostResponseFromJson(value.body);
-
+      RidersLoginPostResponse riders = ridersLoginPostResponseFromJson(value.body);
+      log(value.body);
+      log(riders.rider.riderId.toString());
       setState(() {
         text = '';
       });

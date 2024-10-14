@@ -1,15 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
+import 'package:mini_project_rider/page/page_User/Status.dart';
 
 class OrderReceiver extends StatefulWidget {
-  const OrderReceiver({super.key});
+  int userId;
+   OrderReceiver({super.key, required this.userId});
 
   @override
   State<OrderReceiver> createState() => _OrderReceiverState();
 }
 
 class _OrderReceiverState extends State<OrderReceiver> {
+int _selectedIndex = 2; 
+
+ void _onItemTapped(int _selectedIndex) {
+    switch (_selectedIndex) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,12 +55,12 @@ class _OrderReceiverState extends State<OrderReceiver> {
           'Order',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+        //   onPressed: () {
+        //     Navigator.of(context).pop();
+        //   },
+        // ),
       actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
@@ -60,6 +96,31 @@ class _OrderReceiverState extends State<OrderReceiver> {
           ),
         ],
       ),
+             bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.motorcycle),
+            label: 'Rider',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -74,7 +135,7 @@ class _OrderReceiverState extends State<OrderReceiver> {
                   onPressed: () {
                      Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const OrderPage(),
+                        builder: (context) => OrderPage(userId: widget.userId),
                       ),
                     );
                   },
@@ -91,90 +152,99 @@ class _OrderReceiverState extends State<OrderReceiver> {
                     style: TextStyle(fontSize: 16.0),
                   ),
                 ),
-              ),
-      
-              const SizedBox(height: 20), 
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0), 
-                ),
-                elevation: 5, 
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Stack( // ใช้ Stack เพื่อจัดตำแหน่ง
-                    children: [
-                      Row(
-                        children: [
-                          Column(
-                            children: [
-                              const Text(
-                                'Order : 12',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Image.asset(
-                                'assets/images/Delivery.png',
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover, 
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 20),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'PPPP',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text('Phone : 0999999999'),
-                              Text('Order : ชาไข่มุก โดนัท'),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const Positioned(
-                        bottom: 0,
-                        right: 0, 
-                        child: Column(
+              ), 
+  const SizedBox(height: 20),
+  GestureDetector(
+      onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StatusPage(userId: widget.userId,selectedIndex: _selectedIndex = 2), // หน้าที่คุณต้องการไป
+      ),
+    );
+  },
+    child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0), 
+                  ),
+                  elevation: 5, 
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Stack( // ใช้ Stack เพื่อจัดตำแหน่ง
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              'กำลังจัดส่ง',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue, 
-                              ),
+                            Column(
+                              children: [
+                                const Text(
+                                  'Order : 12',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Image.asset(
+                                  'assets/images/Delivery.png',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover, 
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 20),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'PPPP',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text('Phone : 0999999999'),
+                                Text('Order : ชาไข่มุก โดนัท'),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                      // Positioned(
-                      //   bottom: 0,
-                      //   right: 0, 
-                      //   child: Column(
-                      //     children: const [
-                      //       Text(
-                      //         'จัดส่งเสร็จสิ้น',
-                      //         style: TextStyle(
-                      //           fontSize: 16,
-                      //           fontWeight: FontWeight.bold,
-                      //           color: Colors.green, 
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                    ],
+                        const Positioned(
+                          bottom: 0,
+                          right: 0, 
+                          child: Column(
+                            children: [
+                              Text(
+                                'กำลังจัดส่ง',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue, 
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Positioned(
+                        //   bottom: 0,
+                        //   right: 0, 
+                        //   child: Column(
+                        //     children: const [
+                        //       Text(
+                        //         'จัดส่งเสร็จสิ้น',
+                        //         style: TextStyle(
+                        //           fontSize: 16,
+                        //           fontWeight: FontWeight.bold,
+                        //           color: Colors.green, 
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+  ),
             ],
           ),
         ),

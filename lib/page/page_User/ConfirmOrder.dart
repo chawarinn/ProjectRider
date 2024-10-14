@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_User/Order.dart';
+import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
+import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
-  const ConfrimOrderPage({super.key});
+  int userId;
+   ConfrimOrderPage({super.key,required this.userId});
 
   @override
   State<ConfrimOrderPage> createState() => _ConfrimOrderPageState();
@@ -11,11 +16,35 @@ class ConfrimOrderPage extends StatefulWidget {
 class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
    int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+     void _onItemTapped(int index) {
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
