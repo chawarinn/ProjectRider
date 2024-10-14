@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
@@ -48,7 +48,7 @@ class _SearchPageState extends State<SearchPage> {
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }

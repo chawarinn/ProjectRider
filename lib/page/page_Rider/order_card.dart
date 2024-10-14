@@ -3,10 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/GpsMap.dart';
+import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
+import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:mini_project_rider/page/page_User/ConfirmOrder.dart';
 
 class OrderCard extends StatefulWidget {
-  const OrderCard({super.key});
+  int riderId;
+  OrderCard({super.key,required this.riderId});
 
   @override
   _OrderCardState createState() => _OrderCardState();
@@ -15,10 +18,21 @@ class OrderCard extends StatefulWidget {
 class _OrderCardState extends State<OrderCard> {
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+ void _onItemTapped(int _selectedIndex) {
+    switch (_selectedIndex) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
+        );
+        break;
+    }
   }
 
   @override
@@ -233,7 +247,7 @@ class _OrderCardState extends State<OrderCard> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const GPSandMapPage(),
+        builder: (context) => GPSandMapPage(riderId: widget.riderId,),
       ),
     );
   }

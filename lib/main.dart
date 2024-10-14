@@ -6,8 +6,10 @@ import 'package:mini_project_rider/page/login.dart';
 import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
+import 'package:mini_project_rider/page/page_User/Search.dart';
 import 'package:mini_project_rider/page/page_User/Status.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mini_project_rider/page/register.dart';
 import 'firebase_options.dart';
 
 

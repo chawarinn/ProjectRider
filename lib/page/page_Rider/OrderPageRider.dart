@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:mini_project_rider/page/page_User/AddOrder.dart';
 import 'package:mini_project_rider/page/page_Rider/order_card.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart'; // นำเข้า OrderCardPage
 
 class Orderpagerider extends StatefulWidget {
-  const Orderpagerider({super.key});
+  int riderId;
+  Orderpagerider({super.key, required this.riderId});
 
   @override
   State<Orderpagerider> createState() => _Orderpagerider();
@@ -21,19 +23,13 @@ class _Orderpagerider extends State<Orderpagerider> {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Orderpagerider()),
+          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
         );
         break;
-      // case 1:
-      //   Navigator.push(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => ),
-      //   );
-      //   break;
-      case 2:
+      case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
         );
         break;
     }
@@ -207,7 +203,7 @@ class _Orderpagerider extends State<Orderpagerider> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const OrderCard(),
+        builder: (context) => OrderCard(riderId: widget.riderId,),
       ),
     );
   }

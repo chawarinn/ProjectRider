@@ -39,7 +39,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }

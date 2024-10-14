@@ -6,9 +6,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
+import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 
 class GPSandMapPage extends StatefulWidget {
-  const GPSandMapPage({super.key});
+  int riderId;
+   GPSandMapPage({super.key, required this.riderId});
 
   @override
   State<GPSandMapPage> createState() => _GPSandMapPageState();
@@ -16,11 +19,21 @@ class GPSandMapPage extends StatefulWidget {
 
 class _GPSandMapPageState extends State<GPSandMapPage> {
    int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+   void _onItemTapped(int _selectedIndex) {
+    switch (_selectedIndex) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
+        );
+        break;
+    }
   }
   LatLng latLng = const LatLng(16.246825669508297, 103.25199289277295);
   MapController mapController = MapController();

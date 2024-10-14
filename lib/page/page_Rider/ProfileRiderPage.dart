@@ -2,44 +2,34 @@
 
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
 
 class Profileriderpage extends StatefulWidget {
-  const Profileriderpage({super.key});
+  int riderId;
+   Profileriderpage({super.key, required this.riderId});
 
   @override
   State<Profileriderpage> createState() => _ProfileRiderPageState();
 }
 
 class _ProfileRiderPageState extends State<Profileriderpage> {
-  int _selectedIndex = 3; 
+  int _selectedIndex = 2; 
 
-  void _onItemTapped(int _selectedIndex) {
+ void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage()),
+          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage()),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderReceiver()),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Profileriderpage()),
+          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
         );
         break;
     }
