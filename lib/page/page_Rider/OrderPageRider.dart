@@ -29,7 +29,7 @@ class _Orderpagerider extends State<Orderpagerider> {
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
+          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
         );
         break;
     }
@@ -84,13 +84,10 @@ class _Orderpagerider extends State<Orderpagerider> {
         items: const <BottomNavigationBarItem>[
        
           BottomNavigationBarItem(
-            icon: Icon(Icons.delivery_dining),
-            label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
+           icon: Icon(Icons.assignment),
+            label: 'Orders',
+            ),
+         
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
