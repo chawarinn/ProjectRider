@@ -54,13 +54,6 @@ class _OrderPageState extends State<OrderPage> {
           'Order',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-        // leading: IconButton(
-        //   icon:
-        //       const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-        //   onPressed: () {
-        //     Navigator.of(context).pop();
-        //   },
-        // ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon

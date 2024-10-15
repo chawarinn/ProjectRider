@@ -26,6 +26,23 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
     super.initState();
     fetchRiderProfile(); // โหลดข้อมูลเมื่อหน้าเพจถูกสร้างขึ้น
   }
+  void _onItemTapped(int _selectedIndex) {
+    switch (_selectedIndex) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
+        );
+        break;
+    }
+  }
+
 
   Future<void> fetchRiderProfile() async {
     try {
@@ -48,32 +65,64 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
-        );
-        break;
-    }
-  }
-
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: Color.fromARGB(255, 11, 102, 35),
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+          bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+       
+          BottomNavigationBarItem(
+           icon: Icon(Icons.assignment),
+            label: 'Orders',
+            ),
+         
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -111,20 +160,6 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
                     )
                   : Center(child: Text('No user data found')),
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }
