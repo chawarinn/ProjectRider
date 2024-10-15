@@ -30,7 +30,7 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Profileriderpage(riderId: widget.riderId)),
+          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
         );
         break;
     }
