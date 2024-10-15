@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:developer';
+import 'dart:convert';  
 import 'package:http/http.dart' as http;
+import 'package:mini_project_rider/model/response/user_get_address.dart';
+import 'package:mini_project_rider/model/response/user_get_res.dart';
 import 'package:path/path.dart' as path;
 import 'package:latlong2/latlong.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
@@ -43,75 +46,82 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
       _showAlertDialog(context, "Image selection failed: $e");
     }
   }
-
-  Future<void> _registerRider(BuildContext context) async {
-    if (fullnameCtl.text.isEmpty ||
-        phoneCtl.text.isEmpty ||
-        passwordCtl.text.isEmpty ||
-        confirmpassCtl.text.isEmpty ||
-        addressCtl.text.isEmpty) {
-      _showAlertDialog(context, "กรอกข้อมูลไม่ครบ");
-      return;
-    }
-
-    if (passwordCtl.text != confirmpassCtl.text) {
-      _showAlertDialog(context, "รหัสผ่านไม่ตรงกัน");
-      return;
-    }
-
-    if (_image == null) {
-      _showAlertDialog(context, "กรุณาเพิ่มรูปโปรไฟล์");
-      return;
-    }
-
-    var uri = Uri.parse("$API_ENDPOINT/registerU");
-    var request = http.MultipartRequest('POST', uri);
-
-    var imageStream = http.ByteStream(_image!.openRead());
-    var imageLength = await _image!.length();
-    var multipartFile = http.MultipartFile(
-      'file',
-      imageStream,
-      imageLength,
-      filename: path.basename(_image!.path),
-    );
-
-    request.files.add(multipartFile);
-    request.fields['name'] = fullnameCtl.text;
-    request.fields['phone'] = phoneCtl.text;
-    request.fields['password'] = passwordCtl.text;
-    request.fields['confirmPassword'] = confirmpassCtl.text;
-    request.fields['address'] = addressCtl.text;
-
-    try {
-      var response = await request.send();
-      if (response.statusCode == 201) {
-        int newUserId = await generateNewRiderId();
-
-        // Only proceed if location is selected
-        if (selectedLatitude != null && selectedLongitude != null) {
-          var data = {
-            'id': newUserId,
-            'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
-          };
-
-          await db.collection('address').doc(newUserId.toString()).set(data);
-          log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
-        }
-
-        _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-          );
-        });
-      } else {
-        _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}");
-      }
-    } catch (e) {
-      _showAlertDialog(context, "Error during registration: $e");
-    }
+Future<void> _registerRider(BuildContext context) async {
+  if (fullnameCtl.text.isEmpty ||
+      phoneCtl.text.isEmpty ||
+      passwordCtl.text.isEmpty ||
+      confirmpassCtl.text.isEmpty ||
+      addressCtl.text.isEmpty) {
+    _showAlertDialog(context, "กรอกข้อมูลไม่ครบ");
+    return;
   }
+
+  if (passwordCtl.text != confirmpassCtl.text) {
+    _showAlertDialog(context, "รหัสผ่านไม่ตรงกัน");
+    return;
+  }
+
+  if (_image == null) {
+    _showAlertDialog(context, "กรุณาเพิ่มรูปโปรไฟล์");
+    return;
+  }
+
+  var uri = Uri.parse("$API_ENDPOINT/registerU");
+  var request = http.MultipartRequest('POST', uri);
+
+  var imageStream = http.ByteStream(_image!.openRead());
+  var imageLength = await _image!.length();
+  var multipartFile = http.MultipartFile(
+    'file',
+    imageStream,
+    imageLength,
+    filename: path.basename(_image!.path),
+  );
+
+  request.files.add(multipartFile);
+
+  request.fields['name'] = fullnameCtl.text;
+  request.fields['phone'] = phoneCtl.text;
+  request.fields['password'] = passwordCtl.text;
+  request.fields['confirmPassword'] = confirmpassCtl.text;
+  request.fields['address'] = addressCtl.text;
+
+  try {
+    var response = await request.send();
+    
+    if (response.statusCode == 201) {
+      var data = await response.stream.bytesToString();
+      log(data);
+      var userData = userGetAddressResponseFromJson(data); 
+      log(userData.toString());
+      int newUserId = userData.userId;
+
+      if (selectedLatitude != null && selectedLongitude != null) {
+        var locationData = {
+          'id': newUserId,
+          'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
+        };
+
+        await db.collection('address').doc(newUserId.toString()).set(locationData);
+        log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
+      }
+
+      _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      });
+    } else {
+      var errorData = await response.stream.bytesToString(); 
+      _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}, $errorData");
+    }
+  } catch (e) {
+    _showAlertDialog(context, "Error during registration: $e");
+  }
+}
+
+
 
   void _showAlertDialog(BuildContext context, String message, {VoidCallback? onOkPressed}) {
     showDialog(
@@ -162,20 +172,6 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
     );
   }
 
-  Future<int> generateNewRiderId() async {
-    QuerySnapshot querySnapshot = await db
-        .collection('rider')
-        .orderBy('id', descending: true)
-        .limit(1)
-        .get(); // ดึงเอกสารล่าสุดตามลำดับตัวเลขที่ลดลง
-
-    if (querySnapshot.docs.isNotEmpty) {
-      int lastId = querySnapshot.docs.first['id']; // ดึง ID ล่าสุดจากเอกสาร
-      return lastId + 1; // สร้าง ID ใหม่โดยเพิ่ม 1
-    } else {
-      return 1; // ถ้ายังไม่มีเอกสาร ให้เริ่มที่ 1
-    }
-  }
 
   void _selectLocation() async {
     final result = await Navigator.push(

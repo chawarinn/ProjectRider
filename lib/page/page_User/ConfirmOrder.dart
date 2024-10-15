@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/user_get_order_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';  
+import 'dart:developer';
+import 'package:flutter/services.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
   int userId;
-   ConfrimOrderPage({super.key,required this.userId});
+  int orderId;
+   ConfrimOrderPage({super.key,required this.userId, required this.orderId});
 
   @override
   State<ConfrimOrderPage> createState() => _ConfrimOrderPageState();
@@ -15,6 +23,9 @@ class ConfrimOrderPage extends StatefulWidget {
 
 class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
    int _selectedIndex = 0;
+   String url = '';
+  List<Product> userOrder = [];
+  UserGetOrderResponse? userOrderResponse;
 
      void _onItemTapped(int index) {
     switch (index) {
@@ -44,7 +55,30 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
         break;
     }
   }
+@override
+  void initState() {
+    super.initState();
+     Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
+    });
+    _fetchOrderDetails();
+  }
 
+  Future<void> _fetchOrderDetails() async {
+    final response = await http.get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
+
+    if (response.statusCode == 200) {
+      userOrderResponse = userGetOrderResponseFromJson(response.body);
+      log(userOrderResponse.toString());
+
+      userOrder = userOrderResponse!.products;
+      setState(() {}); // Call setState to refresh UI
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,78 +130,72 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              SizedBox(
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Name : PPPP',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+              if (userOrderResponse != null) 
+                SizedBox(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Name: ${userOrderResponse!.name}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const Text(
-                              'Phone : 0999999999',
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
+                          ),
+                          Text(
+                            'Phone: ${userOrderResponse!.phone}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 5),
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              'Address: ${userOrderResponse!.address}',
+                              style: const TextStyle(fontSize: 16),
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
                             ),
-                            const SizedBox(height: 5),
-                            const SizedBox(
-                              width: 300,
-                              child: Text(
-                                'Address : Kham Riang, Kantha rawichai District, MahaSarakham, 44150, Thailand',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
-                              ),
+                          ),
+                          Container(
+                            width: 300,
+                            height: 1,
+                            color: Colors.black,
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          Text(
+                            'Order ID: ${userOrderResponse!.orderId}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            Container(
-                              width: 300, // เส้นยาวเต็มความกว้าง
-                              height: 1, // ความสูงของเส้น
-                              color: Colors.black, // สีของเส้น
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 10), // ระยะห่าง
-                            ),
-                            const Text(
-                              'Order : 12',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Text(
-                              'ชานมไข่มุก',
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          ...userOrderResponse!.products.map((product) => Text(
+                            product.detail,
+                            style: const TextStyle(fontSize: 16),
+                          )),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                )
+              else
+                const Center(child: CircularProgressIndicator()), // Show loading if no data
+
+      
           const SizedBox(height: 60),
 Text(
   'เพิ่มรูปภาพประกอบสถานะ',
@@ -185,7 +213,7 @@ Center(
         borderRadius: BorderRadius.circular(15.0),
       ),
       elevation: 5,
-      child: Center(  // ใช้ Center เพื่อให้ IconButton อยู่ตรงกลาง
+      child: Center(  
         child: IconButton(
           icon: const Icon(Icons.add_a_photo, size: 40),
           onPressed: () {
@@ -286,8 +314,10 @@ Center(
               ),
               TextButton(
                 onPressed: () {
-         
-                  Navigator.of(context).pop(); // ปิด AlertDialog หลังจากบันทึก
+                  Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+        );
                 },
                 style: TextButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 50, 142, 53),
