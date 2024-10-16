@@ -1,11 +1,14 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/rider_get_order_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
-import 'package:mini_project_rider/page/page_User/AddOrder.dart';
 import 'package:mini_project_rider/page/page_Rider/order_card.dart';
-import 'package:mini_project_rider/page/page_User/ProfilePage.dart'; // นำเข้า OrderCardPage
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 
 class Orderpagerider extends StatefulWidget {
   int riderId;
@@ -16,78 +19,112 @@ class Orderpagerider extends StatefulWidget {
 }
 
 class _Orderpagerider extends State<Orderpagerider> {
-   int _selectedIndex = 0; 
+  int _selectedIndex = 0;
+  String url = '';
+  List<RiderGetOrderResponse> RiderOrderResponse = [];
+  List<Product> RiderOrder = [];
 
- void _onItemTapped(int _selectedIndex) {
+  void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => Orderpagerider(riderId: widget.riderId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
         );
         break;
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then((config) {
+      setState(() {
+        url = config['apiEndpoint'];
+      });
+    }).catchError((err) {
+      log(err.toString());
+    });
+    _fetchOrderRider();
+  }
+
+  Future<void> _fetchOrderRider() async {
+    try {
+      final response = await http.get(Uri.parse('$API_ENDPOINT/riders/order'));
+
+      if (response.statusCode == 200) {
+        RiderOrderResponse = riderGetOrderResponseFromJson(response.body);
+        setState(() {
+          RiderOrder =
+              RiderOrderResponse.expand((order) => order.products).toList();
+        });
+        log(RiderOrder.toString());
+      } else if (response.statusCode == 404) {
+        print('No orders found for rider.');
+      } else {
+        print('Failed to load order details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching order details: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'Order',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-      actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const homeLogoPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-            bottomNavigationBar: BottomNavigationBar(
+appBar: AppBar(
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Order',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  ],
+),
+
+      bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-       
           BottomNavigationBarItem(
-           icon: Icon(Icons.assignment),
+            icon: Icon(Icons.assignment),
             label: 'Orders',
-            ),
-         
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
@@ -102,105 +139,131 @@ class _Orderpagerider extends State<Orderpagerider> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
             children: [
-              Expanded( 
-                child: SizedBox(
-                  height: 160,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    elevation: 5,
-                    child: Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Column(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: const Text(
-                              'ย',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: RiderOrderResponse.length,
+                itemBuilder: (context, index) {
+                  final order = RiderOrderResponse[index];
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          elevation: 5,
+                          child: Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Order ID: ${order.orderId}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Image.network(
+                                      order.orderPhoto,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            order.name,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text('Phone: ${order.phone}'),
+                                          SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              children: [
+                                                const Text('Order:'),
+                                                ...order.products
+                                                    .map((product) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 2.0),
+                                                    child: Text(
+                                                        '${product.detail}'),
+                                                  );
+                                                }).toList(),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              ClipOval(
-                                child: Image.asset(
-                                  'assets/images/Delivery.png',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Column(
-                                children: const [
-                                  Text(
-                                    'ร',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    '8',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    '9',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20), // เพิ่มระยะห่างระหว่างการ์ดกับปุ่ม
-              ElevatedButton(
-                onPressed: () {
-                  _navigateToOrderCardPage();
+                      const SizedBox(
+                          width: 10), // เพิ่มระยะห่างระหว่างการ์ดกับปุ่ม
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 50, left: 0, right: 0), // เพิ่มระยะห่างด้านบน
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => OrderCard(
+                                      riderId: widget.riderId,
+                                      orderId: order.orderId),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(10),
+                              minimumSize: const Size(50, 50),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 255, 17, 17),
+                            ),
+                            child: const Icon(
+                              Icons.flash_on,
+                              size: 30,
+                              color: Color.fromARGB(255, 255, 170, 22),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(20),
-                  minimumSize: const Size(60, 60),
-                  backgroundColor: const Color.fromARGB(255, 255, 17, 17),
-                ),
-                child: const Icon(Icons.flash_on,
-                    size: 30, color: Color.fromARGB(255, 255, 170, 22)),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _navigateToOrderCardPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OrderCard(riderId: widget.riderId,),
       ),
     );
   }

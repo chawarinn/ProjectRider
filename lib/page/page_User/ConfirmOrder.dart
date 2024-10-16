@@ -8,57 +8,65 @@ import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';  
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ConfrimOrderPage extends StatefulWidget {
   int userId;
   int orderId;
-   ConfrimOrderPage({super.key,required this.userId, required this.orderId});
+  ConfrimOrderPage({super.key, required this.userId, required this.orderId});
 
   @override
   State<ConfrimOrderPage> createState() => _ConfrimOrderPageState();
 }
 
 class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
-   int _selectedIndex = 0;
-   String url = '';
+  int _selectedIndex = 0;
+  File? _image;
+  String url = '';
   List<Product> userOrder = [];
   UserGetOrderResponse? userOrderResponse;
 
-     void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
     switch (index) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => SearchPage(userId: widget.userId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => OrderPage(userId: widget.userId)),
         );
         break;
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => OrderReceiver(userId: widget.userId)),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }
   }
-@override
+
+  @override
   void initState() {
     super.initState();
-     Configuration.getConfig().then((config) {
+    Configuration.getConfig().then((config) {
       url = config['apiEndpoint'];
     }).catchError((err) {
       log(err.toString());
@@ -66,8 +74,23 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
     _fetchOrderDetails();
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      log('Image selection failed: $e');
+    }
+  }
+
   Future<void> _fetchOrderDetails() async {
-    final response = await http.get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
+    final response = await http
+        .get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
 
     if (response.statusCode == 200) {
       userOrderResponse = userGetOrderResponseFromJson(response.body);
@@ -79,6 +102,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       print('Failed to load order details: ${response.statusCode}');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,7 +119,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
             Navigator.of(context).pop();
           },
         ),
- actions: [
+        actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
             onPressed: () {
@@ -130,14 +154,14 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
           ),
         ],
       ),
-body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              if (userOrderResponse != null) 
+              if (userOrderResponse != null)
                 SizedBox(
                   child: Card(
                     shape: RoundedRectangleBorder(
@@ -184,45 +208,59 @@ body: SingleChildScrollView(
                             ),
                           ),
                           ...userOrderResponse!.products.map((product) => Text(
-                            product.detail,
-                            style: const TextStyle(fontSize: 16),
-                          )),
+                                product.detail,
+                                style: const TextStyle(fontSize: 16),
+                              )),
                         ],
                       ),
                     ),
                   ),
                 )
               else
-                const Center(child: CircularProgressIndicator()), // Show loading if no data
+                const Center(
+                    child:
+                        CircularProgressIndicator()), // Show loading if no data
 
-      
-          const SizedBox(height: 60),
-Text(
-  'เพิ่มรูปภาพประกอบสถานะ',
-  style: TextStyle(
-    fontSize: 18,
-  ),
-),
-const SizedBox(height: 20),
-Center(
-  child: SizedBox(
-    width: 400,
-    height: 100,
-    child: Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      elevation: 5,
-      child: Center(  
-        child: IconButton(
-          icon: const Icon(Icons.add_a_photo, size: 40),
-          onPressed: () {
-          },
-        ),
-      ),
-    ),
-  ),
-),const SizedBox(height: 20),
+              const SizedBox(height: 60),
+              Text(
+                'เพิ่มรูปภาพประกอบสถานะ',
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: SizedBox(
+                  width: 400,
+                  height: 100,
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 5,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: _image != null
+                              ? Image.file(
+                                  _image!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.add_a_photo,
+                                    size: 40,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               Center(
                 child: SizedBox(
                   width: 100,
@@ -250,7 +288,7 @@ Center(
           ),
         ),
       ),
-       bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.motorcycle),
@@ -276,7 +314,6 @@ Center(
         onTap: _onItemTapped,
       ),
     );
-    
   }
 
   void _Confirm(BuildContext context) {
@@ -291,52 +328,54 @@ Center(
                 child: Text(
                   "ยืนยันการส่งสินค้า",
                   style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
               ),
-              
             ],
           ),
           actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // ทำให้ปุ่มห่างกัน
-            children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // ปิด AlertDialog
-                },
-                child: const Text(
-                  'No',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween, // ทำให้ปุ่มห่างกัน
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // ปิด AlertDialog
+                  },
+                  child: const Text(
+                    'No',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
                 ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              OrderPage(userId: widget.userId)),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 50, 142, 53),
+                    foregroundColor: Colors.black,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'Yes',
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+          ],
         );
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 50, 142, 53),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                child: const Text(
-                  'Yes',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    },
-  );
-}
+      },
+    );
+  }
 }

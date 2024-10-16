@@ -68,43 +68,45 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
    @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+ appBar: AppBar(
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Profile',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  ],
+),
+
           bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
        

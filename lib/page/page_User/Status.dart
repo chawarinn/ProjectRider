@@ -8,8 +8,9 @@ import 'package:mini_project_rider/page/page_User/Search.dart';
 class StatusPage extends StatefulWidget {
  int selectedIndex;
  int userId;
+ int orderId;
 
- StatusPage({Key? key, required this.userId, required this.selectedIndex}) : super(key: key);
+ StatusPage({Key? key, required this.userId, required this.selectedIndex, required this.orderId}) : super(key: key);
 
   @override
   State<StatusPage> createState() => _StatusPageState();

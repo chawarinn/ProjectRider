@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/user_get_ordersent.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
 import 'package:mini_project_rider/page/page_User/Status.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/services.dart';
+import 'dart:io';
 
 class OrderPage extends StatefulWidget {
   int userId;
@@ -15,80 +23,118 @@ class OrderPage extends StatefulWidget {
 
 class _OrderPageState extends State<OrderPage> {
   int _selectedIndex = 1;
+  String url = ' ';
+  List<UserGetOrderSentResponse> userOrderSentResponse = [];
+  List<Product> usersentOrder = [];
 
   void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => SearchPage(userId: widget.userId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => OrderPage(userId: widget.userId)),
         );
         break;
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OrderReceiver(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => OrderReceiver(userId: widget.userId)),
         );
         break;
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
+          MaterialPageRoute(
+              builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
+    });
+    _fetchOrdersent();
+  }
+
+  Future<void> _fetchOrdersent() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$API_ENDPOINT/users/ordersent/${widget.userId}'));
+
+      if (response.statusCode == 200) {
+        userOrderSentResponse = userGetOrderSentResponseFromJson(response.body);
+        setState(() {
+          usersentOrder =
+              userOrderSentResponse.expand((order) => order.products).toList();
+        });
+        log(usersentOrder.toString());
+      } else if (response.statusCode == 404) {
+        print('No orders found for user.');
+      } else {
+        print('Failed to load order details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching order details: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'Order',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const homeLogoPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+appBar: AppBar(
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Order Sent',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  ],
+),
+
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -122,121 +168,101 @@ class _OrderPageState extends State<OrderPage> {
             children: [
               const SizedBox(height: 20),
               SizedBox(
-                width: 100,
-                height: 50,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>  OrderReceiver(userId: widget.userId),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: userOrderSentResponse.length,
+                  itemBuilder: (context, index) {
+                    final order = userOrderSentResponse[index];
+
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
                       ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 50, 142, 53),
-                    foregroundColor: Colors.black,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                  ),
-                  child: const Text(
-                    'Receiver',
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StatusPage(userId: widget.userId, selectedIndex: _selectedIndex = 1), 
-                    ),
-                  );
-                },
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Stack(
-                      // ใช้ Stack เพื่อจัดตำแหน่ง
-                      children: [
-                        Row(
+                      elevation: 5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
+                            Row(
                               children: [
-                                const Text(
-                                  'Order : 12',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                Text(
+                                  'Order ID: ${order.orderId}',
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Spacer(), 
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => StatusPage(
+                                          userId: widget.userId,
+                                          selectedIndex: _selectedIndex,
+                                          orderId: order.orderId,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Icon(
+                                    Icons.local_shipping,
+                                    color: Colors.green,
                                   ),
                                 ),
-                                Image.asset(
-                                  'assets/images/Delivery.png',
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Image.network(
+                                  order.orderPhoto,
                                   width: 100,
                                   height: 100,
                                   fit: BoxFit.cover,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(width: 20),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'PPPP',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        order.name,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text('Phone: ${order.phone}'),
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          children: [
+                                            const Text('Order:'),
+                                            ...order.products.map((product) {
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 2.0),
+                                                child:
+                                                    Text('${product.detail}'),
+                                              );
+                                            }).toList(),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                Text('Phone : 0999999999'),
-                                Text('Order : ชาไข่มุก โดนัท'),
+                                )
                               ],
                             ),
                           ],
                         ),
-                        const Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Column(
-                            children: [
-                              Text(
-                                'กำลังจัดส่ง',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Positioned(
-                        //   bottom: 0,
-                        //   right: 0,
-                        //   child: Column(
-                        //     children: const [
-                        //       Text(
-                        //         'จัดส่งเสร็จสิ้น',
-                        //         style: TextStyle(
-                        //           fontSize: 16,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: Colors.green,
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

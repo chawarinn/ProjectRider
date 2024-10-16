@@ -88,7 +88,7 @@ Future<void> fetchProducts() async {
       userProduct = jsonData.map((e) => UserGetProductResponse.fromJson(e)).toList();
 
       setState(() {
-        filteredProduct = userProduct; // Update the UI with the latest products
+        filteredProduct = userProduct; 
         log(filteredProduct.toString());
       });
     } else {
@@ -356,7 +356,8 @@ Future<void> fetchProducts() async {
           'userID': widget.UserId,
           'userIDSender': widget.userId,
           'Status': '0', 
-          'photo': '0', 
+          'photo': '0',
+          'riderID':'0',
           'products': [], 
         }),
       );

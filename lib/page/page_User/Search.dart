@@ -26,7 +26,7 @@ class _SearchPageState extends State<SearchPage> {
   String _searchPhone = ''; // เก็บข้อมูลที่พิมพ์ในช่องค้นหา
   String url = '';
   List<UserSearchGetResponse> userPhone = [];
-  List<UserSearchGetResponse> filteredUserPhone = []; 
+  List<UserSearchGetResponse> filteredUserPhone = []; // สำหรับเก็บข้อมูลที่ผ่านการกรองแล้ว
 
   @override
   void initState() {
@@ -92,80 +92,94 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'Search',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
+   appBar: AppBar(
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Search',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ),
+  ],
+),
+
+    bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.motorcycle), label: 'Rider'),
-          BottomNavigationBarItem(icon: Icon(Icons.delivery_dining), label: 'Delivery'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.motorcycle),
+            label: 'Rider',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'Delivery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                onChanged: (value) {
-                  _searchPhone = value;
-                  _filterUserList(value); 
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search Phone',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(width: 1, color: Colors.grey),
-                  ),
+     body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              onChanged: (value) {
+                _searchPhone = value;
+                _filterUserList(value); 
+              },
+              decoration: InputDecoration(
+                hintText: 'Search Phone',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(width: 1, color: Colors.grey),
                 ),
               ),
-              const SizedBox(height: 20),
-              filteredUserPhone.isEmpty
+            ),
+            const SizedBox(height: 20),
+            Expanded( 
+              child: filteredUserPhone.isEmpty
                   ? const Center(child: Text('No users found'))
                   : ListView.builder(
-                      shrinkWrap: true,
                       itemCount: filteredUserPhone.length,
                       itemBuilder: (context, index) {
                         var user = filteredUserPhone[index];
@@ -234,8 +248,8 @@ class _SearchPageState extends State<SearchPage> {
                         );
                       },
                     ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

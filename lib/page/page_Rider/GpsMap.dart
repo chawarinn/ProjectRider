@@ -21,18 +21,6 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
    int _selectedIndex = 0;
    void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
-        );
-        break;
     }
   }
   LatLng latLng = const LatLng(16.246825669508297, 103.25199289277295);
@@ -41,63 +29,51 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'navigation map',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); 
+appBar: AppBar(
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Status',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
           },
-        ),
-           actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const homeLogoPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+        );
+      },
+    ),
+  ],
+),
+
             bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
        
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),
             label: 'Delivery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
