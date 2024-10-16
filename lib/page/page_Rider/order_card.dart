@@ -62,7 +62,7 @@ class _OrderCardState extends State<OrderCard> {
       userOrderResponse = userGetOrderResponseFromJson(response.body);
       log(userOrderResponse.toString());
       userOrder = userOrderResponse!.products;
-      setState(() {}); // Call setState to refresh UI
+      setState(() {}); 
     } else {
       print('Failed to load order details: ${response.statusCode}');
     }
@@ -96,7 +96,7 @@ class _OrderCardState extends State<OrderCard> {
                     actions: [
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
+                          Navigator.of(context).pop(); 
                         },
                         child: const Text('No'),
                       ),
@@ -200,7 +200,7 @@ class _OrderCardState extends State<OrderCard> {
               else
                 const Center(
                   child: CircularProgressIndicator(),
-                ), // Show loading if no data
+                ),
               const SizedBox(height: 20),
 
               ...userOrder.map((product) => Center(
@@ -218,7 +218,7 @@ class _OrderCardState extends State<OrderCard> {
                       child: Row(
                         children: [
                           Image.network(
-                            product.productPhoto, // Assuming productPhoto is a URL
+                            product.productPhoto, 
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -300,12 +300,28 @@ class _OrderCardState extends State<OrderCard> {
     );
   }
 
-  void ConfrimOrder() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GPSandMapPage(riderId: widget.riderId),
-      ),
+void ConfrimOrder() {
+
+  final url = '$API_ENDPOINT/order/updaterider/${widget.riderId}/${widget.orderId}'; 
+  http.put(Uri.parse(url)).then((response) {
+    if (response.statusCode == 200) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GPSandMapPage(riderId: widget.riderId, orderId: widget.orderId),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating order: ${response.body}')),
+      );
+    }
+  }).catchError((error) {
+    print("Error: $error");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error occurred: $error')),
     );
-  }
+  });
+}
+
 }

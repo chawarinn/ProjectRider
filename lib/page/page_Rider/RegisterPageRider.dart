@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mini_project_rider/page/login.dart';
 import 'package:path/path.dart';
-import 'package:mini_project_rider/config/internet_config.dart'; 
+import 'package:mini_project_rider/config/internet_config.dart';
 
 class RegisterPageRider extends StatefulWidget {
   const RegisterPageRider({super.key});
@@ -25,7 +25,8 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
 
   Future<void> _pickImage() async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedFile =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
         setState(() {
@@ -90,12 +91,14 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
         );
       });
     } else {
-      _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}");
+      _showAlertDialog(
+          context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}");
     }
   }
 
   // Alert dialog function
-  void _showAlertDialog(BuildContext context, String message, {VoidCallback? onOkPressed}) {
+  void _showAlertDialog(BuildContext context, String message,
+      {VoidCallback? onOkPressed}) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -128,7 +131,8 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -147,7 +151,8 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
                     radius: 100,
                     backgroundImage: _image != null
                         ? FileImage(_image!)
-                        : const AssetImage('assets/images/Profile.png') as ImageProvider,
+                        : const AssetImage('assets/images/Profile.png')
+                            as ImageProvider,
                   ),
                   Positioned(
                     bottom: 0,
@@ -276,8 +281,10 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  textStyle: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 onPressed: () {
                   _registerRider(context); // Pass context when registering
