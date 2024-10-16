@@ -77,14 +77,43 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
   Future<void> _pickImage() async {
     try {
       final pickedFile =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
+          await ImagePicker().pickImage(source: ImageSource.camera);
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('รูปภาพถูกเพิ่มสำเร็จ!')),
+        );
       }
     } catch (e) {
       log('Image selection failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ไม่สามารถถ่ายรูปได้: $e')),
+      );
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_image == null) return; 
+
+    String url = '$API_ENDPOINT/order/updatephotostatus/${widget.orderId}'; 
+
+    var request = http.MultipartRequest('PUT', Uri.parse(url))
+      ..files.add(await http.MultipartFile.fromPath('file', _image!.path));
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      print("Image uploaded successfully");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => OrderPage(userId: widget.userId)),
+      );
+    } else {
+      print("Failed to upload image: ${response.statusCode}");
     }
   }
 
@@ -97,7 +126,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       log(userOrderResponse.toString());
 
       userOrder = userOrderResponse!.products;
-      setState(() {}); // Call setState to refresh UI
+      setState(() {});
     } else {
       print('Failed to load order details: ${response.statusCode}');
     }
@@ -217,10 +246,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
                   ),
                 )
               else
-                const Center(
-                    child:
-                        CircularProgressIndicator()), // Show loading if no data
-
+                const Center(child: CircularProgressIndicator()),
               const SizedBox(height: 60),
               Text(
                 'เพิ่มรูปภาพประกอบสถานะ',
@@ -229,37 +255,39 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Center(
-                child: SizedBox(
-                  width: 400,
-                  height: 100,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    elevation: 5,
-                    child: Center(
+              if (_image != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.file(
+                    _image!,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else
+                Center(
+                  child: SizedBox(
+                    width: 400,
+                    height: 100,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      elevation: 5,
                       child: GestureDetector(
                         onTap: _pickImage,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10.0),
-                          child: _image != null
-                              ? Image.file(
-                                  _image!,
-                                  fit: BoxFit.cover,
-                                )
-                              : Center(
-                                  child: Icon(
-                                    Icons.add_a_photo,
-                                    size: 40,
-                                  ),
-                                ),
+                          child: Center(
+                            child: Icon(
+                              Icons.add_a_photo,
+                              size: 40,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
               const SizedBox(height: 20),
               Center(
                 child: SizedBox(
@@ -267,7 +295,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
                   height: 50,
                   child: TextButton(
                     onPressed: () {
-                      _Confirm(context); // เรียกใช้ _Confirm แทน ConfirmOrder
+                      _Confirm(context);
                     },
                     style: TextButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 50, 142, 53),
@@ -338,11 +366,11 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
           actions: [
             Row(
               mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween, // ทำให้ปุ่มห่างกัน
+                  MainAxisAlignment.spaceBetween, 
               children: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // ปิด AlertDialog
+                    Navigator.of(context).pop(); 
                   },
                   child: const Text(
                     'No',
@@ -350,14 +378,9 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              OrderPage(userId: widget.userId)),
-                    );
-                  },
+                  onPressed: () async {
+                  await _uploadImage(); 
+                },
                   style: TextButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 50, 142, 53),
                     foregroundColor: Colors.black,

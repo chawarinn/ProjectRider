@@ -11,7 +11,8 @@ import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 
 class GPSandMapPage extends StatefulWidget {
   int riderId;
-   GPSandMapPage({super.key, required this.riderId});
+  int orderId;
+   GPSandMapPage({super.key, required this.riderId, required this.orderId});
 
   @override
   State<GPSandMapPage> createState() => _GPSandMapPageState();
@@ -30,7 +31,7 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
 appBar: AppBar(
-  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  automaticallyImplyLeading: false,  
   backgroundColor: const Color.fromARGB(255, 11, 102, 35),
   title: const Text(
     'Status',
@@ -100,7 +101,7 @@ appBar: AppBar(
               children: [
                 TileLayer(
                   urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // OpenStreetMap
+                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
                   userAgentPackageName: 'com.example.app',
                 ),
                 MarkerLayer(
