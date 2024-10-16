@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class ProfileRiderPage extends StatefulWidget {
-  final int riderId;  // ใช้ final เพราะค่า riderId ไม่ควรเปลี่ยนแปลง
+  final int riderId; // ใช้ final เพราะค่า riderId ไม่ควรเปลี่ยนแปลง
 
   const ProfileRiderPage({super.key, required this.riderId});
 
@@ -26,32 +26,38 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
     super.initState();
     fetchRiderProfile(); // โหลดข้อมูลเมื่อหน้าเพจถูกสร้างขึ้น
   }
+
   void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => Orderpagerider(riderId: widget.riderId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
         );
         break;
     }
   }
 
-
   Future<void> fetchRiderProfile() async {
     try {
-      final response = await http.get(Uri.parse('$API_ENDPOINT/riders/rider?riderID=${widget.riderId}')).timeout(Duration(seconds: 10));
+      final response = await http
+          .get(
+              Uri.parse('$API_ENDPOINT/riders/rider?riderID=${widget.riderId}'))
+          .timeout(Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         setState(() {
           List<dynamic> result = json.decode(response.body);
-          riderProfile = result.isNotEmpty ? result[0] : {};  // ใช้ result[0] ถ้ามีข้อมูล
+          riderProfile =
+              result.isNotEmpty ? result[0] : {}; // ใช้ result[0] ถ้ามีข้อมูล
           isLoading = false;
         });
       } else {
@@ -65,56 +71,55 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
     }
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
- appBar: AppBar(
-  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
-  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-  title: const Text(
-    'Profile',
-    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-  ),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.logout, color: Colors.black),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Confirm Logout'),
-              content: const Text('Are you sure you want to log out?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('No'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
-                  },
-                  child: const Text('Yes'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ),
-  ],
-),
-
-          bottomNavigationBar: BottomNavigationBar(
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // ปิดการใช้งานปุ่มย้อนกลับ
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => const homeLogoPage()));
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-       
           BottomNavigationBarItem(
-           icon: Icon(Icons.assignment),
+            icon: Icon(Icons.assignment),
             label: 'Orders',
-            ),
-         
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
@@ -136,12 +141,14 @@ class _ProfileRiderPageState extends State<ProfileRiderPage> {
                       children: [
                         CircleAvatar(
                           radius: 60,
-                          backgroundImage: NetworkImage(riderProfile['photo'] ?? 'https://example.com/default-profile.png'), // รูปจาก Firebase
+                          backgroundImage: NetworkImage(riderProfile['photo'] ??
+                              'https://example.com/default-profile.png'), // รูปจาก Firebase
                         ),
                         SizedBox(height: 20),
                         Text(
                           riderProfile['name'],
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 10),
                         Text(

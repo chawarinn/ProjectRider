@@ -68,12 +68,12 @@ class _Orderpagerider extends State<Orderpagerider> {
         });
         log(RiderOrder.toString());
       } else if (response.statusCode == 404) {
-        print('No orders found for rider.');
+        log('No orders found for rider.');
       } else {
-        print('Failed to load order details: ${response.statusCode}');
+        log('Failed to load order details: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching order details: $e');
+      log('Error fetching order details: $e');
     }
   }
 
