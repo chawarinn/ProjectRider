@@ -12,7 +12,6 @@ class homeLogoPage extends StatefulWidget {
 class _homeLogoPageState extends State<homeLogoPage> {
   @override
   Widget build(BuildContext context) {
-
     return PopScope(
       canPop: false,
       child: Scaffold(

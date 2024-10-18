@@ -10,6 +10,8 @@ import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderCard extends StatefulWidget {
   final int riderId;
@@ -26,6 +28,8 @@ class _OrderCardState extends State<OrderCard> {
   String url = '';
   List<Product> userOrder = [];
   UserGetOrderResponse? userOrderResponse;
+   var db = FirebaseFirestore.instance;
+FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
 
   void _onItemTapped(int selectedIndex) {
     switch (selectedIndex) {
@@ -301,16 +305,24 @@ class _OrderCardState extends State<OrderCard> {
   }
 
 void ConfrimOrder() {
-
   final url = '$API_ENDPOINT/order/updaterider/${widget.riderId}/${widget.orderId}'; 
   http.put(Uri.parse(url)).then((response) {
     if (response.statusCode == 200) {
+      var data = {
+        'Status': '2',
+        'riderID': widget.riderId,
+      };
+
+      db.collection('orders').doc(widget.orderId.toString()).update(data);
+      realtimeDb.ref('orders/${widget.orderId}').update(data);
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => GPSandMapPage(riderId: widget.riderId, orderId: widget.orderId),
         ),
       );
+      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating order: ${response.body}')),

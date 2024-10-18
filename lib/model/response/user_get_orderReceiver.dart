@@ -16,6 +16,7 @@ class UserGetOrderReceiverResponse {
     String phone;
     String userPhoto;
     String address;
+    String status;
     List<Product> products;
 
     UserGetOrderReceiverResponse({
@@ -26,6 +27,7 @@ class UserGetOrderReceiverResponse {
         required this.phone,
         required this.userPhoto,
         required this.address,
+        required this.status,
         required this.products,
     });
 
@@ -37,6 +39,7 @@ class UserGetOrderReceiverResponse {
         phone: json["phone"],
         userPhoto: json["userPhoto"],
         address: json["address"],
+        status: json["Status"],
         products: List<Product>.from(json["products"].map((x) => Product.fromJson(x))),
     );
 
@@ -48,6 +51,7 @@ class UserGetOrderReceiverResponse {
         "phone": phone,
         "userPhoto": userPhoto,
         "address": address,
+        "Status": status,
         "products": List<dynamic>.from(products.map((x) => x.toJson())),
     };
 }

@@ -4,9 +4,9 @@
 
 import 'dart:convert';
 
-UserGetResponse userGetResponseFromJson(String str) => UserGetResponse.fromJson(json.decode(str));
+List<UserGetResponse> userGetResponseFromJson(String str) => List<UserGetResponse>.from(json.decode(str).map((x) => UserGetResponse.fromJson(x)));
 
-String userGetResponseToJson(UserGetResponse data) => json.encode(data.toJson());
+String userGetResponseToJson(List<UserGetResponse> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class UserGetResponse {
     int userId;
@@ -15,6 +15,8 @@ class UserGetResponse {
     String password;
     String photo;
     String address;
+    double lat;
+    double long;
 
     UserGetResponse({
         required this.userId,
@@ -23,6 +25,8 @@ class UserGetResponse {
         required this.password,
         required this.photo,
         required this.address,
+        required this.lat,
+        required this.long,
     });
 
     factory UserGetResponse.fromJson(Map<String, dynamic> json) => UserGetResponse(
@@ -32,6 +36,8 @@ class UserGetResponse {
         password: json["password"],
         photo: json["photo"],
         address: json["address"],
+        lat: json["lat"]?.toDouble(),
+        long: json["long"]?.toDouble(),
     );
 
     Map<String, dynamic> toJson() => {
@@ -41,5 +47,7 @@ class UserGetResponse {
         "password": password,
         "photo": photo,
         "address": address,
+        "lat": lat,
+        "long": long,
     };
 }

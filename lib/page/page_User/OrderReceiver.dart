@@ -254,7 +254,22 @@ class _OrderReceiverState extends State<OrderReceiver> {
                                           ],
                                         ),
                                       ),
+                                      Align(
+          alignment: Alignment.bottomRight,
+                                    child: Text(
+                                      order.status == '1' 
+                                        ? 'รอไรเดอร์รับงาน' 
+                                        : order.status == '2' 
+                                          ? 'กำลังจัดส่ง' 
+                                          : order.status == '3' 
+                                          ? 'จัดส่งเสร็จสิ้น' 
+                                          : '',
+                                      style: const TextStyle(
+                                          fontSize: 16, fontWeight: FontWeight.normal),
+                                    ),
+                                  ),
                                     ],
+
                                   ),
                                 )
                               ],

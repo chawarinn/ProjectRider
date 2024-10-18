@@ -17,6 +17,8 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_database/firebase_database.dart';
+
 
 class AddOrderPage extends StatefulWidget {
   final int userId;
@@ -40,6 +42,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   UserPostOrderResponse? Response;
   String? errorMessage;
   var db = FirebaseFirestore.instance;
+FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
 
   @override
   void initState() {
@@ -70,12 +73,14 @@ class _AddOrderPageState extends State<AddOrderPage> {
   Future<void> loadDataAsync() async {
     try {
       var response = await http.get(Uri.parse(
-          '$API_ENDPOINT/users/user?userID=${widget.UserId}')); // Use the url variable
+          '$API_ENDPOINT/users/user?userID=${widget.UserId}')); 
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
           userData = UserGetResponse.fromJson(data[0]);
         });
+        log(userData!.lat.toString());
+        log(userData!.long.toString());
       } else {
         log('Error: ${response.statusCode}');
       }
@@ -248,6 +253,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
                   ),
                 ),
               ),
+              
               const SizedBox(height: 20),
               SizedBox(
                 width: 130,
@@ -308,7 +314,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
                                           ),
                                         )
                                       : const Text(
-                                          'Loading...'), // Placeholder text while loading
+                                          'Loading...'), 
                                 ),
                               ],
                             ),
@@ -385,15 +391,21 @@ class _AddOrderPageState extends State<AddOrderPage> {
       var data = {
         'userID': widget.UserId,
         'userIDSender': widget.userId,
+        'Name': userData!.name,
+        'Phone': userData!.phone,
         'Status': '0',
         'photo': '0',
         'photo2': '0',
         'photo3': '0',
         'riderID': '0',
         'latLngRider': {'latitude': null, 'longitude': null},
+        'latLngUser': {'latitude': userData!.lat, 'longitude': userData!.long},
+        'latLngUserSent': {'latitude': null, 'longitude': null},
       };
 
       await db.collection('orders').doc(newOrderId.toString()).set(data);
+      realtimeDb.ref('orders/$newOrderId').set(data);
+
       if (response.statusCode == 201) {
         print(response.statusCode);
         final orderId = jsonDecode(response.body)['orderId'];

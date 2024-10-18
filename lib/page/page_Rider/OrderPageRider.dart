@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/config/config.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
@@ -9,6 +11,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart' ;
+
 
 class Orderpagerider extends StatefulWidget {
   int riderId;
@@ -23,6 +28,7 @@ class _Orderpagerider extends State<Orderpagerider> {
   String url = '';
   List<RiderGetOrderResponse> RiderOrderResponse = [];
   List<Product> RiderOrder = [];
+  var realtimeDb = FirebaseDatabase.instance.ref().child('orders');
 
   void _onItemTapped(int _selectedIndex) {
     switch (_selectedIndex) {
@@ -142,126 +148,143 @@ appBar: AppBar(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: RiderOrderResponse.length,
-                itemBuilder: (context, index) {
-                  final order = RiderOrderResponse[index];
-
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          elevation: 5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Order ID: ${order.orderId}',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Image.network(
-                                      order.orderPhoto,
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    const SizedBox(width: 20),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            order.name,
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text('Phone: ${order.phone}'),
-                                          SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(
-                                              children: [
-                                                const Text('Order:'),
-                                                ...order.products
-                                                    .map((product) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 2.0),
-                                                    child: Text(
-                                                        '${product.detail}'),
-                                                  );
-                                                }).toList(),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                          width: 10), // เพิ่มระยะห่างระหว่างการ์ดกับปุ่ม
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: 50, left: 0, right: 0), // เพิ่มระยะห่างด้านบน
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => OrderCard(
-                                      riderId: widget.riderId,
-                                      orderId: order.orderId),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(10),
-                              minimumSize: const Size(50, 50),
-                              backgroundColor:
-                                  const Color.fromARGB(255, 255, 17, 17),
-                            ),
-                            child: const Icon(
-                              Icons.flash_on,
-                              size: 30,
-                              color: Color.fromARGB(255, 255, 170, 22),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+              // Wrapping the FirebaseAnimatedList in a SizedBox to provide height constraints
+         SizedBox(
+  height: 400,  
+  child: FirebaseAnimatedList(
+    query: realtimeDb,
+    itemBuilder: (context, snapshot, animation, index) {
+      Map orders = snapshot.value as Map;
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
               ),
+              elevation: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Order ID: ${orders['orderID']}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Image.network(
+                          orders['photo'] ?? 'https://via.placeholder.com/100',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                orders['name'] ?? 'Unknown',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text('Phone: ${orders['phone']}'),
+                              // SizedBox(
+                              //   height: 50,  // Provide a constrained height for ListView.builder
+                              //   child: ListView.builder(
+                              //     shrinkWrap: true,
+                              //     physics: const NeverScrollableScrollPhysics(),
+                              //     itemCount: RiderOrderResponse.length,
+                              //     itemBuilder: (context, index) {
+                              //       final order = RiderOrderResponse[index];
+                              //       return SingleChildScrollView(
+                              //         scrollDirection: Axis.horizontal,
+                              //         child: Row(
+                              //           children: [
+                              //             const Text('Order:'),
+                              //             ...order.products.map((product) {
+                              //               return Padding(
+                              //                 padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                              //                 child: Text('${product.detail}'),
+                              //               );
+                              //             }).toList(),
+                              //           ],
+                              //         ),
+                              //       );
+                              //     },
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            height: 50,  
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: RiderOrderResponse.length,
+              itemBuilder: (context, index) {
+                final order = RiderOrderResponse[index];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 50, left: 0, right: 0),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderCard(
+                              riderId: widget.riderId,
+                              orderId: order.orderId,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                        minimumSize: const Size(50, 50),
+                        backgroundColor: const Color.fromARGB(255, 255, 17, 17),
+                      ),
+                      child: const Icon(
+                        Icons.flash_on,
+                        size: 30,
+                        color: Color.fromARGB(255, 255, 170, 22),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
+
             ],
           ),
         ),

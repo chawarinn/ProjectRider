@@ -118,8 +118,6 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
               ],
             ),
           ),
-          // First image upload section
-          //  Text('เพิ่มรูปภาพ ประกอบสถานะ'),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(

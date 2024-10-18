@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/config/config.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/model/response/user_get_order_res.dart';
+import 'package:mini_project_rider/model/response/user_get_res.dart';
+import 'package:mini_project_rider/model/response/user_put_order.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
@@ -13,6 +16,7 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:firebase_database/firebase_database.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
   int userId;
@@ -29,6 +33,10 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
   String url = '';
   List<Product> userOrder = [];
   UserGetOrderResponse? userOrderResponse;
+  var db = FirebaseFirestore.instance;
+  UserPutOrderResponse? ResponsePhoto;
+  UserGetResponse? userData;
+  FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
 
   void _onItemTapped(int index) {
     switch (index) {
@@ -72,6 +80,7 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       log(err.toString());
     });
     _fetchOrderDetails();
+    _fetchAddress();
   }
 
   Future<void> _pickImage() async {
@@ -95,27 +104,64 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
     }
   }
 
+ 
   Future<void> _uploadImage() async {
-    if (_image == null) return; 
-
-    String url = '$API_ENDPOINT/order/updatephotostatus/${widget.orderId}'; 
-
-    var request = http.MultipartRequest('PUT', Uri.parse(url))
-      ..files.add(await http.MultipartFile.fromPath('file', _image!.path));
-
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      print("Image uploaded successfully");
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => OrderPage(userId: widget.userId)),
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณาเพิ่มรูปภาพก่อน')),
       );
-    } else {
-      print("Failed to upload image: ${response.statusCode}");
+      return;
+    }
+
+    try {
+      String url = '$API_ENDPOINT/order/updatephotostatus/${widget.orderId}';
+      var request = http.MultipartRequest('PUT', Uri.parse(url))
+        ..files.add(await http.MultipartFile.fromPath('file', _image!.path));
+
+      var response = await request.send();
+      var responseData = await http.Response.fromStream(response);
+
+      if (response.statusCode == 200) {
+        ResponsePhoto = userPutOrderResponseFromJson(responseData.body);
+        log('Image uploaded successfully');
+        
+        if (ResponsePhoto != null && userData != null) {
+          var data = {
+            'Status': '1',
+            'photo': ResponsePhoto!.imageUrl,
+            'latLngUserSent': {
+              'latitude': userData!.lat,
+              'longitude': userData!.long
+            },
+          };
+
+          await db.collection('orders').doc(widget.orderId.toString()).update(data);
+          realtimeDb.ref('orders/${widget.orderId}').update(data);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OrderPage(userId: widget.userId)),
+          );
+        } else {
+          log('ResponsePhoto หรือ userData มีค่าเป็น null');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('การอัปเดตข้อมูลไม่สำเร็จ')),
+          );
+        }
+      } else {
+        log('Failed to upload image: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('ไม่สามารถอัปโหลดรูปภาพได้: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      log('Error uploading image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('เกิดข้อผิดพลาดขณะอัปโหลด: $e')),
+      );
     }
   }
+
 
   Future<void> _fetchOrderDetails() async {
     final response = await http
@@ -132,57 +178,65 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
     }
   }
 
+  Future<void> _fetchAddress() async {
+    try {
+      var response = await http.get(Uri.parse(
+          '$API_ENDPOINT/users/user?userID=${widget.userId}')); 
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          userData = UserGetResponse.fromJson(data[0]);
+        });
+      } else {
+        log('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-        title: const Text(
-          'Add Order',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
-        leading: IconButton(
-          icon:
-              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-          onPressed: () {
-            Navigator.of(context).pop();
+  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
+  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+  title: const Text(
+    'Add Order',
+    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+  ),
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.logout, color: Colors.black),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Logout'),
+              content: const Text('Are you sure you want to log out?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
+                  },
+                  child: const Text('Yes'),
+                ),
+              ],
+            );
           },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black), // Logout icon
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to log out?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(); // Close the dialog
-                        },
-                        child: const Text('No'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const homeLogoPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('Yes'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+        );
+      },
+    ),
+  ],
+),
+  
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

@@ -46,7 +46,8 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
       _showAlertDialog(context, "Image selection failed: $e");
     }
   }
-Future<void> _registerRider(BuildContext context) async {
+
+Future<void> _registerUser(BuildContext context) async {
   if (fullnameCtl.text.isEmpty ||
       phoneCtl.text.isEmpty ||
       passwordCtl.text.isEmpty ||
@@ -85,6 +86,10 @@ Future<void> _registerRider(BuildContext context) async {
   request.fields['password'] = passwordCtl.text;
   request.fields['confirmPassword'] = confirmpassCtl.text;
   request.fields['address'] = addressCtl.text;
+request.fields['lat'] = selectedLatitude?.toString() ?? '';
+request.fields['long'] = selectedLongitude?.toString() ?? '';
+
+
 
   try {
     var response = await request.send();
@@ -94,17 +99,17 @@ Future<void> _registerRider(BuildContext context) async {
       log(data);
       var userData = userGetAddressResponseFromJson(data); 
       log(userData.toString());
-      int newUserId = userData.userId;
+      // int newUserId = userData.userId;
 
-      if (selectedLatitude != null && selectedLongitude != null) {
-        var locationData = {
-          'id': newUserId,
-          'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
-        };
+      // if (selectedLatitude != null && selectedLongitude != null) {
+      //   var locationData = {
+      //     'id': newUserId,
+      //     'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
+      //   };
 
-        await db.collection('address').doc(newUserId.toString()).set(locationData);
-        log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
-      }
+      //   await db.collection('address').doc(newUserId.toString()).set(locationData);
+      //   log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
+      // }
 
       _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
         Navigator.push(
@@ -281,7 +286,7 @@ Future<void> _registerRider(BuildContext context) async {
                     backgroundColor: const Color.fromARGB(255, 11, 102, 35),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  onPressed: () => _registerRider(context),
+                  onPressed: () => _registerUser(context),
                   child: const Text(
                     'Register',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
