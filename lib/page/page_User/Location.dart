@@ -1,7 +1,8 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart'; // เพิ่มการนำเข้า geolocator
+import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
 class LocationPage extends StatefulWidget {
@@ -18,6 +19,8 @@ class _LocationPageState extends State<LocationPage> {
   Set<Marker> markers = {};
   final TextEditingController addressCtl = TextEditingController();
   List<Placemark> placemarks = [];
+String? selectedAddress;
+  LatLng? latLng; // เก็บตำแหน่งที่ผู้ใช้เลือก
 
   @override
   void initState() {
@@ -29,27 +32,25 @@ class _LocationPageState extends State<LocationPage> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // ตรวจสอบว่าบริการตำแหน่งถูกเปิดใช้งานหรือไม่
+
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // บริการตำแหน่งถูกปิดให้แจ้งผู้ใช้
       return Future.error('Location services are disabled.');
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      // ขอการอนุญาตจากผู้ใช้
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // ผู้ใช้ปฏิเสธการอนุญาต
         return Future.error('Location permissions are denied');
       }
     }
 
     // ตอนนี้สามารถเข้าถึงตำแหน่งได้แล้ว
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     currentLocation = LatLng(position.latitude, position.longitude);
-    
+
     initPosition = CameraPosition(
       target: currentLocation!,
       zoom: 15,
@@ -64,7 +65,6 @@ class _LocationPageState extends State<LocationPage> {
       ),
     );
 
-    // Update the map
     setState(() {});
 
     // Log the address
@@ -75,6 +75,11 @@ class _LocationPageState extends State<LocationPage> {
 
     if (placemarks.isNotEmpty) {
       print('Address: ${placemarks[0].street}, ${placemarks[0].locality}');
+      // เก็บค่าที่อยู่ในตัวแปร selectedAddress
+      selectedAddress = '${placemarks[0].street}, ${placemarks[0].locality}';
+      // หากต้องการใช้ selectedAddress ที่นี่ สามารถใช้งานได้เลย
+      // เช่น: log(selectedAddress!);
+      log(selectedAddress!);
     }
   }
 
@@ -94,13 +99,14 @@ class _LocationPageState extends State<LocationPage> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
       ),
-      body: currentLocation == null // เช็คว่าตำแหน่งปัจจุบันมีค่าไหม
+      body: currentLocation == null
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
@@ -110,10 +116,24 @@ class _LocationPageState extends State<LocationPage> {
                   markers: markers,
                   myLocationEnabled: true,
                   myLocationButtonEnabled: true,
-                  onCameraMove: (CameraPosition position) {
+                  onTap: (LatLng point)  async {
                     setState(() {
-                      initPosition = position; 
+                      latLng = point; // บันทึกพิกัดที่เลือก
+                      markers.clear();
+                      markers.add(
+                        Marker(
+                          markerId: const MarkerId('selected_location'),
+                          position: point,
+                          infoWindow:
+                              const InfoWindow(title: 'Selected Location'),
+                        ),
+                      );
                     });
+                    placemarks = await placemarkFromCoordinates(point.latitude, point.longitude);
+                    if (placemarks.isNotEmpty) {
+                      selectedAddress = '${placemarks[0].street}, ${placemarks[0].locality}';
+                      log(selectedAddress!);
+                    }
                   },
                 ),
                 Positioned(
@@ -122,10 +142,26 @@ class _LocationPageState extends State<LocationPage> {
                   right: 100,
                   child: ElevatedButton(
                     onPressed: () {
-                      // ฟังก์ชันการยืนยันตำแหน่ง
+                      if (latLng != null ) {
+                        Navigator.pop(context, {
+                          'latitude': latLng!.latitude,
+                          'longitude': latLng!.longitude,
+                         'Address': selectedAddress ?? 'Unknown Address',
+                        });
+                        log(latLng.toString());
+                        log('Latitude: ${latLng!.latitude}, Longitude: ${latLng!.longitude}');
+                      } else {
+                        // ส่งตำแหน่งปัจจุบันกลับไปหากไม่เลือกตำแหน่งใหม่
+                        Navigator.pop(context, {
+                          'latitude': currentLocation!.latitude,
+                          'longitude': currentLocation!.longitude,
+                          'Address': selectedAddress ?? 'Unknown Address',
+                        });
+                        log('Using default location: ${currentLocation.toString()}');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF7723), // เปลี่ยนสีปุ่มถ้าต้องการ
+                      backgroundColor: const Color(0xFFFF7723),
                     ),
                     child: const Text(
                       'ยืนยัน',
@@ -141,90 +177,3 @@ class _LocationPageState extends State<LocationPage> {
     );
   }
 }
-
-
-
-
-//       body: Column(
-//         children: [
-//           Expanded(
-//             flex: 2,
-//             child: FlutterMap(
-//               mapController: mapController,
-//               options: MapOptions(
-//                 initialCenter: latLng,
-//                 initialZoom: 15.0,
-//                 onTap: (tapPosition, point) {
-//                   setState(() {
-//                     latLng = point; 
-//                   });
-//                 },
-//               ),
-//               children: [
-//                 TileLayer(
-//                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
-//                   userAgentPackageName: 'com.example.app',
-//                 ),
-//                 MarkerLayer(
-//                   markers: [
-//                     Marker(
-//                       point: latLng,
-//                       width: 40,
-//                       height: 40,
-//                       child: Container(
-//                         color: Colors.amber,
-//                         child: const Icon(Icons.pin_drop, color: Colors.red, size: 40), 
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//           // Success button
-//           const SizedBox(height: 10),
-//           Center(
-//             child: ElevatedButton(
-//               onPressed: () {
-//                 Navigator.pop(context, latLng); 
-//               },
-//               style: ElevatedButton.styleFrom(
-//                 backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-//                 padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-//               ),
-//               child: const Text(
-//                 'Save',
-//                 style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 22, 12, 12)),
-//               ),
-//             ),
-//           ),
-//           const SizedBox(height: 10),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Future<Position> _determinePosition() async {
-//     bool serviceEnabled;
-//     LocationPermission permission;
-
-//     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-//     if (!serviceEnabled) {
-//       return Future.error('Location services are disabled.');
-//     }
-
-//     permission = await Geolocator.checkPermission();
-//     if (permission == LocationPermission.denied) {
-//       permission = await Geolocator.requestPermission();
-//       if (permission == LocationPermission.denied) {
-//         return Future.error('Location permissions are denied');
-//       }
-//     }
-
-//     if (permission == LocationPermission.deniedForever) {
-//       return Future.error('Location permissions are permanently denied, we cannot request permissions.');
-//     }
-
-//     return await Geolocator.getCurrentPosition();
-//   }
-// }

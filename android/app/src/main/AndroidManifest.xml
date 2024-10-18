@@ -12,9 +12,9 @@
         android:icon="@mipmap/ic_launcher">
 
         <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDyB8fwW_xm68lHQ0ItgNXAlDCJY4Fdct4"/> <!-- ใส่ API Key ของคุณตรงนี้ -->
+       <meta-data
+      android:name="com.google.android.geo.API_KEY"
+      android:value="AIzaSyCx_nY9kH2gt-RDEA3Ehy8M3XBQ1ZXHtMg"  />
 
         <activity
             android:name=".MainActivity"

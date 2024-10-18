@@ -6,11 +6,10 @@ import 'dart:io';
 import 'dart:developer';
 import 'dart:convert';  
 import 'package:http/http.dart' as http;
-import 'package:mini_project_rider/model/response/user_get_address.dart';
-import 'package:mini_project_rider/model/response/user_get_res.dart';
-import 'package:path/path.dart' as path;
-import 'package:latlong2/latlong.dart';
+import 'package:mini_project_rider/config/config.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/user_get_address.dart';
+import 'package:path/path.dart' as path;
 import 'package:mini_project_rider/page/login.dart';
 import 'package:mini_project_rider/page/page_User/Location.dart';
 
@@ -23,16 +22,27 @@ class RegisterPageUser extends StatefulWidget {
 
 class _RegisterPageUserState extends State<RegisterPageUser> {
   File? _image;
+  String url = '';
   final fullnameCtl = TextEditingController();
   final phoneCtl = TextEditingController();
   final passwordCtl = TextEditingController();
   final confirmpassCtl = TextEditingController();
   final addressCtl = TextEditingController();
-  var db = FirebaseFirestore.instance;
+  final db = FirebaseFirestore.instance;
 
   String? selectedLocation;
   double? selectedLatitude;
   double? selectedLongitude;
+
+  @override
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
+    });
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -47,86 +57,70 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
     }
   }
 
-Future<void> _registerUser(BuildContext context) async {
-  if (fullnameCtl.text.isEmpty ||
-      phoneCtl.text.isEmpty ||
-      passwordCtl.text.isEmpty ||
-      confirmpassCtl.text.isEmpty ||
-      addressCtl.text.isEmpty) {
-    _showAlertDialog(context, "กรอกข้อมูลไม่ครบ");
-    return;
-  }
-
-  if (passwordCtl.text != confirmpassCtl.text) {
-    _showAlertDialog(context, "รหัสผ่านไม่ตรงกัน");
-    return;
-  }
-
-  if (_image == null) {
-    _showAlertDialog(context, "กรุณาเพิ่มรูปโปรไฟล์");
-    return;
-  }
-
-  var uri = Uri.parse("$API_ENDPOINT/registerU");
-  var request = http.MultipartRequest('POST', uri);
-
-  var imageStream = http.ByteStream(_image!.openRead());
-  var imageLength = await _image!.length();
-  var multipartFile = http.MultipartFile(
-    'file',
-    imageStream,
-    imageLength,
-    filename: path.basename(_image!.path),
-  );
-
-  request.files.add(multipartFile);
-
-  request.fields['name'] = fullnameCtl.text;
-  request.fields['phone'] = phoneCtl.text;
-  request.fields['password'] = passwordCtl.text;
-  request.fields['confirmPassword'] = confirmpassCtl.text;
-  request.fields['address'] = addressCtl.text;
-request.fields['lat'] = selectedLatitude?.toString() ?? '';
-request.fields['long'] = selectedLongitude?.toString() ?? '';
-
-
-
-  try {
-    var response = await request.send();
-    
-    if (response.statusCode == 201) {
-      var data = await response.stream.bytesToString();
-      log(data);
-      var userData = userGetAddressResponseFromJson(data); 
-      log(userData.toString());
-      // int newUserId = userData.userId;
-
-      // if (selectedLatitude != null && selectedLongitude != null) {
-      //   var locationData = {
-      //     'id': newUserId,
-      //     'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
-      //   };
-
-      //   await db.collection('address').doc(newUserId.toString()).set(locationData);
-      //   log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
-      // }
-
-      _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
-      });
-    } else {
-      var errorData = await response.stream.bytesToString(); 
-      _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}, $errorData");
+  Future<void> _registerUser(BuildContext context) async {
+    if (fullnameCtl.text.isEmpty ||
+        phoneCtl.text.isEmpty ||
+        passwordCtl.text.isEmpty ||
+        confirmpassCtl.text.isEmpty ||
+        addressCtl.text.isEmpty) {
+      _showAlertDialog(context, "กรอกข้อมูลไม่ครบ");
+      return;
     }
-  } catch (e) {
-    _showAlertDialog(context, "Error during registration: $e");
+
+    if (passwordCtl.text != confirmpassCtl.text) {
+      _showAlertDialog(context, "รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+
+    if (_image == null) {
+      _showAlertDialog(context, "กรุณาเพิ่มรูปโปรไฟล์");
+      return;
+    }
+
+    var uri = Uri.parse("$API_ENDPOINT/registerU");
+    var request = http.MultipartRequest('POST', uri);
+
+    var imageStream = http.ByteStream(_image!.openRead());
+    var imageLength = await _image!.length();
+    var multipartFile = http.MultipartFile(
+      'file',
+      imageStream,
+      imageLength,
+      filename: path.basename(_image!.path),
+    );
+
+    request.files.add(multipartFile);
+
+    request.fields['name'] = fullnameCtl.text;
+    request.fields['phone'] = phoneCtl.text;
+    request.fields['password'] = passwordCtl.text;
+    request.fields['confirmPassword'] = confirmpassCtl.text;
+    request.fields['address'] = addressCtl.text;
+    request.fields['lat'] = selectedLatitude?.toString() ?? '';
+    request.fields['long'] = selectedLongitude?.toString() ?? '';
+
+    try {
+      var response = await request.send();
+
+      if (response.statusCode == 201) {
+        var data = await response.stream.bytesToString();
+        log(data);
+        var userData = userGetAddressResponseFromJson(data);
+
+        _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        });
+      } else {
+        var errorData = await response.stream.bytesToString(); 
+        _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}, $errorData");
+      }
+    } catch (e) {
+      _showAlertDialog(context, "Error during registration: $e");
+    }
   }
-}
-
-
 
   void _showAlertDialog(BuildContext context, String message, {VoidCallback? onOkPressed}) {
     showDialog(
@@ -165,7 +159,6 @@ request.fields['long'] = selectedLongitude?.toString() ?? '';
             controller: controller,
             obscureText: obscureText,
             keyboardType: keyboardType,
-            inputFormatters: obscureText ? [] : [], // เปลี่ยนเป็น empty array
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderSide: const BorderSide(width: 1),
@@ -177,7 +170,6 @@ request.fields['long'] = selectedLongitude?.toString() ?? '';
     );
   }
 
-
   void _selectLocation() async {
     final result = await Navigator.push(
       context,
@@ -185,12 +177,15 @@ request.fields['long'] = selectedLongitude?.toString() ?? '';
         builder: (context) => const LocationPage(),
       ),
     );
-    if (result != null && result is LatLng) {
+
+    if (result != null && result is Map<String, dynamic>) {
       setState(() {
-        selectedLatitude = result.latitude;
-        selectedLongitude = result.longitude;
-        selectedLocation = "$selectedLatitude, $selectedLongitude";
+        selectedLatitude = result['latitude'];
+        selectedLongitude = result['longitude'];
+        selectedLocation = "$selectedLatitude, $selectedLongitude"; // แสดงผลตำแหน่งที่เลือก
+        addressCtl.text = result['Address'] ?? ''; // กำหนดค่าที่อยู่จากตำแหน่ง
       });
+      log('Selected Location: $selectedLocation');
     }
   }
 
@@ -289,7 +284,7 @@ request.fields['long'] = selectedLongitude?.toString() ?? '';
                   onPressed: () => _registerUser(context),
                   child: const Text(
                     'Register',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
               ),
