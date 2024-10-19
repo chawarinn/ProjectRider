@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:developer';
+import 'dart:convert';  
 import 'package:http/http.dart' as http;
+import 'package:mini_project_rider/config/config.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/model/response/user_get_address.dart';
 import 'package:path/path.dart' as path;
-import 'package:latlong2/latlong.dart';
 import 'package:mini_project_rider/page/login.dart';
 import 'package:mini_project_rider/page/page_User/Location.dart';
 
@@ -20,16 +22,27 @@ class RegisterPageUser extends StatefulWidget {
 
 class _RegisterPageUserState extends State<RegisterPageUser> {
   File? _image;
+  String url = '';
   final fullnameCtl = TextEditingController();
   final phoneCtl = TextEditingController();
   final passwordCtl = TextEditingController();
   final confirmpassCtl = TextEditingController();
   final addressCtl = TextEditingController();
-  var db = FirebaseFirestore.instance;
+  final db = FirebaseFirestore.instance;
 
   String? selectedLocation;
   double? selectedLatitude;
   double? selectedLongitude;
+
+  @override
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
+    });
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -44,7 +57,7 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
     }
   }
 
-  Future<void> _registerRider(BuildContext context) async {
+  Future<void> _registerUser(BuildContext context) async {
     if (fullnameCtl.text.isEmpty ||
         phoneCtl.text.isEmpty ||
         passwordCtl.text.isEmpty ||
@@ -77,30 +90,22 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
     );
 
     request.files.add(multipartFile);
+
     request.fields['name'] = fullnameCtl.text;
     request.fields['phone'] = phoneCtl.text;
     request.fields['password'] = passwordCtl.text;
     request.fields['confirmPassword'] = confirmpassCtl.text;
     request.fields['address'] = addressCtl.text;
+    request.fields['lat'] = selectedLatitude?.toString() ?? '';
+    request.fields['long'] = selectedLongitude?.toString() ?? '';
 
     try {
       var response = await request.send();
+
       if (response.statusCode == 201) {
         var data = await response.stream.bytesToString();
         log(data);
         var userData = userGetAddressResponseFromJson(data);
-        log(userData.toString());
-        int newUserId = userData.userId;
-
-        // Store location data if available
-        if (selectedLatitude != null && selectedLongitude != null) {
-          var locationData = {
-            'id': newUserId,
-            'latLng': {'latitude': selectedLatitude, 'longitude': selectedLongitude},
-          };
-          await db.collection('address').doc(newUserId.toString()).set(locationData);
-          log('สมัครสมาชิกสำเร็จ, ID: $newUserId');
-        }
 
         _showAlertDialog(context, "สมัครสมาชิกสำเร็จ", onOkPressed: () {
           Navigator.push(
@@ -109,7 +114,7 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
           );
         });
       } else {
-        var errorData = await response.stream.bytesToString();
+        var errorData = await response.stream.bytesToString(); 
         _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}, $errorData");
       }
     } catch (e) {
@@ -172,13 +177,15 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
         builder: (context) => const LocationPage(),
       ),
     );
-    if (result != null && result is LatLng) {
+
+    if (result != null && result is Map<String, dynamic>) {
       setState(() {
-        selectedLatitude = result.latitude;
-        selectedLongitude = result.longitude;
-        selectedLocation = "$selectedLatitude, $selectedLongitude";
+        selectedLatitude = result['latitude'];
+        selectedLongitude = result['longitude'];
+        selectedLocation = "$selectedLatitude, $selectedLongitude"; // แสดงผลตำแหน่งที่เลือก
+        addressCtl.text = result['Address'] ?? ''; // กำหนดค่าที่อยู่จากตำแหน่ง
       });
-      log("Selected Location: $selectedLocation"); // Log selected location
+      log('Selected Location: $selectedLocation');
     }
   }
 
@@ -274,10 +281,10 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
                     backgroundColor: const Color.fromARGB(255, 11, 102, 35),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  onPressed: () => _registerRider(context),
+                  onPressed: () => _registerUser(context),
                   child: const Text(
                     'Register',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
               ),

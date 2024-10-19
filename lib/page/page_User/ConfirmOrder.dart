@@ -162,7 +162,6 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
     }
   }
 
-
   Future<void> _fetchOrderDetails() async {
     final response = await http
         .get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
