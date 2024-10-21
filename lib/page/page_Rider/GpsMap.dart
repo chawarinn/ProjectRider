@@ -2,7 +2,9 @@ import 'dart:developer';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mini_project_rider/config/config.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/user_get_order_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,6 +30,9 @@ class GPSandMapPage extends StatefulWidget {
 
 class _GPSandMapPageState extends State<GPSandMapPage> {
   int _selectedIndex = 0;
+  List<Product> userOrder = [];
+  UserGetOrderResponse? userOrderResponse;
+  String url = '';
   File? _image;
   File? _image2;
   final FirebaseFirestore db = FirebaseFirestore.instance;
@@ -37,12 +42,36 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
   LatLng? _currentPosition;
   Location _location = Location();
 
-
+  @override
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
+    });
+    _fetchOrderDetails();
+  }
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       _initLocation();
     });
+  }
+  
+  Future<void> _fetchOrderDetails() async {
+    final response = await http
+        .get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
+
+    if (response.statusCode == 200) {
+      userOrderResponse = userGetOrderResponseFromJson(response.body);
+      log(userOrderResponse.toString());
+
+      userOrder = userOrderResponse!.products;
+      setState(() {});
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
+    }
   }
 
   Future<void> _pickImage() async {
@@ -291,7 +320,7 @@ Future<void> _updateStatus() async {
               child: GoogleMap(
                 onMapCreated: _onMapCreated,
                 initialCameraPosition: CameraPosition(
-                  target: _currentPosition ?? LatLng(13.7563, 100.5018), // Default position
+                  target: _currentPosition ?? LatLng(13.7563, 100.5018),
                   zoom: 11.0,
                 ),
                 myLocationEnabled: true,
@@ -305,6 +334,62 @@ Future<void> _updateStatus() async {
                     : {},
               ),
             ),
+            const SizedBox(height: 20),
+            if (userOrderResponse != null)
+            SizedBox(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Name: ${userOrderResponse!.name}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Phone: ${userOrderResponse!.phone}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 5),
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              'Address: ${userOrderResponse!.address}',
+                              style: const TextStyle(fontSize: 16),
+                              softWrap: true,
+                              overflow: TextOverflow.visible,
+                            ),
+                          ),
+                          Container(
+                            width: 300,
+                            height: 1,
+                            color: Colors.black,
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          Text(
+                            'Order ID: ${userOrderResponse!.orderId}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ...userOrderResponse!.products.map((product) => Text(
+                                product.detail,
+                                style: const TextStyle(fontSize: 16),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
             _buildImagePicker(),
             _buildImagePicker2(),
              const SizedBox(height: 20),
