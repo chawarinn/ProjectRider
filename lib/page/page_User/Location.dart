@@ -118,7 +118,7 @@ String? selectedAddress;
                   myLocationButtonEnabled: true,
                   onTap: (LatLng point)  async {
                     setState(() {
-                      latLng = point; // บันทึกพิกัดที่เลือก
+                      latLng = point; 
                       markers.clear();
                       markers.add(
                         Marker(

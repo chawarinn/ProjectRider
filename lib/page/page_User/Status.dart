@@ -6,6 +6,11 @@ import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
 import 'package:mini_project_rider/page/page_User/ProfilePage.dart';
 import 'package:mini_project_rider/page/page_User/Search.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:developer';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 
 class StatusPage extends StatefulWidget {
   final int selectedIndex;
@@ -26,17 +31,19 @@ class StatusPage extends StatefulWidget {
 class _StatusPageState extends State<StatusPage> {
   int? _currentIndex;
   late GoogleMapController mapController;
+  final DatabaseReference _ordersRef =
+      FirebaseDatabase.instance.ref().child('orders');
 
-  LatLng _center = const LatLng(0, 0); // เริ่มต้นที่ (0, 0)
+  LatLng _center = const LatLng(0, 0);
   Set<Marker> _markers = {};
 
-  // ฟังก์ชันสำหรับอัพเดตตำแหน่งปัจจุบัน
   void _updateCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _center = LatLng(position.latitude, position.longitude);
-      _updateMarkers(); // อัพเดท Marker
-      mapController.animateCamera(CameraUpdate.newLatLng(_center)); // เลื่อนกล้องไปที่ตำแหน่งใหม่
+      _updateMarkers();
+      mapController.animateCamera(CameraUpdate.newLatLng(_center));
     });
   }
 
@@ -46,20 +53,18 @@ class _StatusPageState extends State<StatusPage> {
   }
 
   void _updateMarkers() {
-    _markers.clear(); // เคลียร์ Marker เก่า
+    _markers.clear();
 
-    // เพิ่ม Marker สำหรับตำแหน่งปัจจุบัน
     _markers.add(
       Marker(
-        markerId: MarkerId('currentLocation'),
+        markerId: const MarkerId('currentLocation'),
         position: _center,
-        infoWindow: InfoWindow(title: 'ตำแหน่งปัจจุบัน'),
+        infoWindow: const InfoWindow(title: 'ตำแหน่งปัจจุบัน'),
       ),
     );
 
-    // เพิ่ม Marker อื่น ๆ ตามต้องการ
     _markers.add(
-      Marker(
+      const Marker(
         markerId: MarkerId('start'),
         position: LatLng(13.7563, 100.5018),
         infoWindow: InfoWindow(title: 'จุดเริ่มต้น'),
@@ -67,14 +72,14 @@ class _StatusPageState extends State<StatusPage> {
     );
 
     _markers.add(
-      Marker(
+      const Marker(
         markerId: MarkerId('end'),
         position: LatLng(13.7653, 100.5247),
         infoWindow: InfoWindow(title: 'จุดปลายทาง'),
       ),
     );
 
-    setState(() {}); // อัปเดต UI
+    setState(() {});
   }
 
   @override
@@ -82,13 +87,13 @@ class _StatusPageState extends State<StatusPage> {
     super.initState();
     _currentIndex = widget.selectedIndex;
 
-    // อัปเดตตำแหน่งผู้ใช้ทุกครั้งที่มีการเปลี่ยนแปลงตำแหน่ง
-    final locationSettings = LocationSettings(
+    final locationSettings = const LocationSettings(
       accuracy: LocationAccuracy.high, // กำหนดความแม่นยำ
       distanceFilter: 10, // อัปเดตทุกครั้งที่เปลี่ยนตำแหน่ง 10 เมตร
     );
 
-    Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position position) {
+    Geolocator.getPositionStream(locationSettings: locationSettings)
+        .listen((Position position) {
       setState(() {
         _center = LatLng(position.latitude, position.longitude);
         _updateMarkers(); // อัปเดต Marker ด้วยตำแหน่งใหม่
@@ -136,25 +141,6 @@ class _StatusPageState extends State<StatusPage> {
     }
   }
 
-  Widget _buildStatusItem(String status, String? imagePath, {bool showRiderDetails = false}) {
-    return ListTile(
-      leading: Icon(Icons.check_circle, color: Colors.green),
-      title: Text(status),
-      subtitle: showRiderDetails ? _buildRiderDetails() : (imagePath != null ? Image.asset(imagePath, height: 50) : null),
-    );
-  }
-
-  Widget _buildRiderDetails() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('ชื่อไรเดอร์: สมชาย'),
-        const Text('เบอร์โทร: 080-123-4567'),
-        const Text('ทะเบียนรถ: 1234 ABC'),
-      ],
-    );
-  }
-
   Widget _buildLogoutDialog(BuildContext context) {
     return AlertDialog(
       title: const Text('Confirm Logout'),
@@ -180,7 +166,6 @@ class _StatusPageState extends State<StatusPage> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -190,7 +175,8 @@ class _StatusPageState extends State<StatusPage> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -209,49 +195,7 @@ class _StatusPageState extends State<StatusPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // ส่วนของแผนที่
-          Container(
-            height: 300,
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 11.0,
-              ),
-              markers: _markers,
-              polylines: {
-                Polyline(
-                  polylineId: PolylineId('route'),
-                  points: [
-                    LatLng(13.7563, 100.5018),
-                    LatLng(13.7653, 100.5247),
-                  ],
-                  color: Colors.blue,
-                  width: 5,
-                ),
-              },
-            ),
-          ),
-          // รายการสถานะการจัดส่ง
-          Expanded(
-            child: ListView(
-              children: [
-                _buildStatusItem('รอไรเดอร์มารับสินค้า', 'images/delivery.png'),
-                _buildStatusItem('ไรเดอร์รับงาน', null, showRiderDetails: true),
-                _buildStatusItem('กำลังจัดส่ง', null),
-                _buildStatusItem('จัดส่งสำเร็จ', null),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex!,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.motorcycle),
@@ -268,6 +212,268 @@ class _StatusPageState extends State<StatusPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
+          ),
+        ],
+        currentIndex:_currentIndex!,
+        selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+      ),
+      body: Column(
+        children: [
+          // ส่วนของแผนที่
+          Container(
+            height: 300,
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 11.0,
+              ),
+              markers: _markers,
+              polylines: {
+                const Polyline(
+                  polylineId: PolylineId('route'),
+                  points: [
+                    LatLng(13.7563, 100.5018),
+                    LatLng(13.7653, 100.5247),
+                  ],
+                  color: Colors.blue,
+                  width: 5,
+                ),
+              },
+            ),
+          ),
+          Expanded(
+            child: FirebaseAnimatedList(
+              query: _ordersRef,
+              itemBuilder: (context, snapshot, animation, index) {
+                // Check if the snapshot exists
+                if (!snapshot.exists) {
+                  return const Center(
+                    child: Text('No orders available.'),
+                  );
+                }
+
+                // Extract orderId from snapshot
+                int orderId = int.tryParse(snapshot.key ?? '0') ?? 0;
+
+                log(" AA ${orderId}, ${widget.orderId.toString()}");
+
+                if (orderId != widget.orderId) {
+                  return const SizedBox.shrink();
+                }
+
+                Map orders = snapshot.value as Map;
+
+                if (orders['Status'] == '1') {
+                  return ListTile(
+                    title: Text('Order ID: $orderId'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('รอไรเดอร์มารับสินค้า'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('ไรเดอร์รับงาน'),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('กำลังจัดส่ง'),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('จัดส่งสำเร็จ'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (orders['Status'] == '2'){
+                  return ListTile(
+                    title: Text('Order ID: $orderId'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('รอไรเดอร์มารับสินค้า'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color:  Colors.green),
+                          title: Text('ไรเดอร์รับงาน'),
+                          subtitle: Row(
+                            children: [
+                             Text(orders['riderID']),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('กำลังจัดส่ง'),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('จัดส่งสำเร็จ'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (orders['Status'] == '3'){
+                  return ListTile(
+                    title: Text('Order ID: $orderId'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('รอไรเดอร์มารับสินค้า'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color:  Colors.green),
+                          title: Text('ไรเดอร์รับงาน'),
+                          subtitle: Row(
+                            children: [
+                             Text(orders['riderID']),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('กำลังจัดส่ง'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo2'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.grey),
+                          title: Text('จัดส่งสำเร็จ'),
+                          
+                        ),
+                      ],
+                    ),
+                  );
+                }else if (orders['Status'] == '2'){
+                  return ListTile(
+                    title: Text('Order ID: $orderId'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('รอไรเดอร์มารับสินค้า'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color:  Colors.green),
+                          title: Text('ไรเดอร์รับงาน'),
+                          subtitle: Row(
+                            children: [
+                             Text(orders['riderID']),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('กำลังจัดส่ง'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo2'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.check_circle, color: Colors.green),
+                          title: Text('จัดส่งสำเร็จ'),
+                          subtitle: Row(
+                            children: [
+                              Image.network(
+                                orders['photo3'],
+                                width: 70,
+                                height: 70,
+                                fit: BoxFit.cover,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }else {
+                  return const SizedBox.shrink();
+                }
+              },
+            ),
           ),
         ],
       ),

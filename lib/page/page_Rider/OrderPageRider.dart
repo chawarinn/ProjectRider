@@ -1,8 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/config/config.dart';
-import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/model/response/rider_get_order_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
@@ -10,27 +7,30 @@ import 'package:mini_project_rider/page/page_Rider/order_card.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart' ;
-
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 
 class Orderpagerider extends StatefulWidget {
-  int riderId;
-  Orderpagerider({super.key, required this.riderId});
+  final int riderId;
+  Orderpagerider({Key? key, required this.riderId}) : super(key: key);
 
   @override
-  State<Orderpagerider> createState() => _Orderpagerider();
+  _OrderpageriderState createState() => _OrderpageriderState();
 }
 
-class _Orderpagerider extends State<Orderpagerider> {
+class _OrderpageriderState extends State<Orderpagerider> {
   int _selectedIndex = 0;
   String url = '';
-  List<RiderGetOrderResponse> RiderOrderResponse = [];
-  List<Product> RiderOrder = [];
-  var realtimeDb = FirebaseDatabase.instance.ref().child('orders');
+  List<RiderGetOrderResponse> riderOrderResponse = [];
+  List<Product> riderOrder = [];
+  final DatabaseReference _ordersRef =
+      FirebaseDatabase.instance.ref().child('orders');
 
-  void _onItemTapped(int _selectedIndex) {
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
     switch (_selectedIndex) {
       case 0:
         Navigator.push(
@@ -64,15 +64,15 @@ class _Orderpagerider extends State<Orderpagerider> {
 
   Future<void> _fetchOrderRider() async {
     try {
-      final response = await http.get(Uri.parse('$API_ENDPOINT/riders/order'));
+      final response = await http.get(Uri.parse('$url/riders/order'));
 
       if (response.statusCode == 200) {
-        RiderOrderResponse = riderGetOrderResponseFromJson(response.body);
+        riderOrderResponse = riderGetOrderResponseFromJson(response.body);
         setState(() {
-          RiderOrder =
-              RiderOrderResponse.expand((order) => order.products).toList();
+          riderOrder =
+              riderOrderResponse.expand((order) => order.products).toList();
         });
-        log(RiderOrder.toString());
+        log(riderOrder.toString());
       } else if (response.statusCode == 404) {
         log('No orders found for rider.');
       } else {
@@ -82,50 +82,50 @@ class _Orderpagerider extends State<Orderpagerider> {
       log('Error fetching order details: $e');
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-appBar: AppBar(
-  automaticallyImplyLeading: false,  // ปิดการใช้งานปุ่มย้อนกลับ
-  backgroundColor: const Color.fromARGB(255, 11, 102, 35),
-  title: const Text(
-    'Order',
-    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-  ),
-  actions: [
-    IconButton(
-      icon: const Icon(Icons.logout, color: Colors.black),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Confirm Logout'),
-              content: const Text('Are you sure you want to log out?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('No'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const homeLogoPage()));
-                  },
-                  child: const Text('Yes'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ),
-  ],
-),
-
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color.fromARGB(255, 11, 102, 35),
+        title: const Text(
+          'Order',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('No'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => const homeLogoPage()));
+                        },
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -148,143 +148,117 @@ appBar: AppBar(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              // Wrapping the FirebaseAnimatedList in a SizedBox to provide height constraints
-         SizedBox(
-  height: 400,  
-  child: FirebaseAnimatedList(
-    query: realtimeDb,
-    itemBuilder: (context, snapshot, animation, index) {
-      Map orders = snapshot.value as Map;
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Order ID: ${orders['orderID']}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+              SizedBox(
+                height: 400,
+                child: FirebaseAnimatedList(
+                  query: _ordersRef,
+                 // Item builder for FirebaseAnimatedList
+itemBuilder: (context, snapshot, animation, index) {
+  if (!snapshot.exists) {
+    return const Text('No orders available.');
+  }
+
+  Map orders = snapshot.value as Map;
+  String orderId = snapshot.key ?? 'Unknown';
+
+  // Check if orders is null to avoid potential errors
+  if (orders == null) {
+    return const Text('Invalid data.');
+  }
+
+  // Check if the order status is 1 before displaying it
+  if (orders['Status'] == '1') {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Order ID: $orderId',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Image.network(
-                          orders['photo'] ?? 'https://via.placeholder.com/100',
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                orders['name'] ?? 'Unknown',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Image.network(
+                        orders['photo'] ?? 'https://via.placeholder.com/100',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              orders['Name'] ?? 'Unknown',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text('Phone: ${orders['phone']}'),
-                              // SizedBox(
-                              //   height: 50,  // Provide a constrained height for ListView.builder
-                              //   child: ListView.builder(
-                              //     shrinkWrap: true,
-                              //     physics: const NeverScrollableScrollPhysics(),
-                              //     itemCount: RiderOrderResponse.length,
-                              //     itemBuilder: (context, index) {
-                              //       final order = RiderOrderResponse[index];
-                              //       return SingleChildScrollView(
-                              //         scrollDirection: Axis.horizontal,
-                              //         child: Row(
-                              //           children: [
-                              //             const Text('Order:'),
-                              //             ...order.products.map((product) {
-                              //               return Padding(
-                              //                 padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                              //                 child: Text('${product.detail}'),
-                              //               );
-                              //             }).toList(),
-                              //           ],
-                              //         ),
-                              //       );
-                              //     },
-                              //   ),
-                              // ),
-                            ],
-                          ),
+                            ),
+                            Text('Phone: ${orders['Phone']}'),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OrderCard(
+                  riderId: widget.riderId,
+                  orderId: int.parse(orderId),
                 ),
               ),
-            ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(10),
+            minimumSize: const Size(50, 50),
+            backgroundColor: const Color.fromARGB(255, 255, 17, 17),
           ),
-          const SizedBox(width: 10),
-          SizedBox(
-            height: 50,  
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: RiderOrderResponse.length,
-              itemBuilder: (context, index) {
-                final order = RiderOrderResponse[index];
-                return Padding(
-                  padding: const EdgeInsets.only(top: 50, left: 0, right: 0),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => OrderCard(
-                              riderId: widget.riderId,
-                              orderId: order.orderId,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(10),
-                        minimumSize: const Size(50, 50),
-                        backgroundColor: const Color.fromARGB(255, 255, 17, 17),
-                      ),
-                      child: const Icon(
-                        Icons.flash_on,
-                        size: 30,
-                        color: Color.fromARGB(255, 255, 170, 22),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+          child: const Icon(
+            Icons.flash_on,
+            size: 30,
+            color: Color.fromARGB(255, 255, 170, 22),
           ),
-        ],
-      );
-    },
-  ),
-),
+        ),
+      ],
+    );
+  } else {
+    return const SizedBox.shrink(); 
+  }
+}
 
+                ),
+              ),
             ],
           ),
         ),

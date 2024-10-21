@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   # google_maps_flutter: ^2.1.1 # เปลี่ยนเป็นเวอร์ชันล่าสุด
-  geolocator: ^9.0.0 # เปลี่ยนเป็นเวอร์ชันล่าสุด
+  # geolocator: ^9.0.0 # เปลี่ยนเป็นเวอร์ชันล่าสุด
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -41,7 +41,7 @@ dependencies:
   image_picker: ^1.1.2
   path_provider: ^2.1.4
   # android_path_provider: ^0.3.0
-  # geolocator: ^12.0.0
+  geolocator: ^12.0.0
   geolocator_android: 4.5.5
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
@@ -54,6 +54,7 @@ dependencies:
   flutter_svg: ^1.1.0
   map_picker: ^0.0.2
   google_maps_flutter: ^2.0.6
+  firebase_storage: ^11.6.5 
 
 
 dev_dependencies:
@@ -111,3 +112,23 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+# name: mini_project_rider
+# description: A Flutter project.
+
+# environment:
+#   sdk: ">=2.18.0 <3.0.0"
+
+# dependencies:
+#   flutter:
+#     sdk: flutter
+#   firebase_core: ^2.10.0
+#   cloud_firestore: ^4.17.5
+#   firebase_storage: ^11.6.5
+#   image_picker: ^0.8.5+3
+
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+
+# flutter:
+#   uses-material-design: true

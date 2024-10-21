@@ -18,7 +18,11 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
-
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 
 class AddOrderPage extends StatefulWidget {
   final int userId;
@@ -42,7 +46,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
   UserPostOrderResponse? Response;
   String? errorMessage;
   var db = FirebaseFirestore.instance;
-FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
+  FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
 
   @override
   void initState() {
@@ -72,8 +76,8 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
 
   Future<void> loadDataAsync() async {
     try {
-      var response = await http.get(Uri.parse(
-          '$API_ENDPOINT/users/user?userID=${widget.UserId}')); 
+      var response = await http
+          .get(Uri.parse('$API_ENDPOINT/users/user?userID=${widget.UserId}'));
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
@@ -201,7 +205,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
           ),
         ],
       ),
-      body: SingleChildScrollView(
+   body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -210,9 +214,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
               const SizedBox(height: 20),
               SizedBox(
                 child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                   elevation: 5,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
@@ -222,26 +224,19 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Name : ${userData?.name ?? "Loading..."}', // Handle null case
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              'Name : ${userData?.name ?? "Loading..."}',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'Phone : ${userData?.phone ?? "Loading..."}', // Handle null case
-                              style: const TextStyle(
-                                fontSize: 16,
-                              ),
+                              'Phone : ${userData?.phone ?? "Loading..."}',
+                              style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 5),
                             SizedBox(
                               width: 300,
                               child: Text(
-                                'Address : ${userData?.address ?? "Loading..."}', // Handle null case
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                ),
+                                'Address : ${userData?.address ?? "Loading..."}',
+                                style: const TextStyle(fontSize: 16),
                                 softWrap: true,
                                 overflow: TextOverflow.visible,
                               ),
@@ -253,7 +248,28 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                   ),
                 ),
               ),
-              
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 300,
+                width: double.infinity,
+                child: userData != null
+                    ? GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(userData!.lat, userData!.long),
+                          zoom: 14,
+                        ),
+                        markers: {
+                          Marker(
+                            markerId: MarkerId('userLocation'),
+                            position: LatLng(userData!.lat, userData!.long),
+                            infoWindow: InfoWindow(title: userData!.name, snippet: userData!.address),
+                          ),
+                        },
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                      )
+                    : const Center(child: CircularProgressIndicator()),
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: 130,
@@ -313,8 +329,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                                             fontWeight: FontWeight.bold,
                                           ),
                                         )
-                                      : const Text(
-                                          'Loading...'), 
+                                      : const Text('Loading...'),
                                 ),
                               ],
                             ),
@@ -385,9 +400,9 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
       );
 
       Response = userPostOrderResponseFromJson(response.body);
-       int newOrderId = Response!.orderId;
-       log(newOrderId.toString());
-       log(Response!.orderId.toString());
+      int newOrderId = Response!.orderId;
+      log(newOrderId.toString());
+      log(Response!.orderId.toString());
       var data = {
         'userID': widget.UserId,
         'userIDSender': widget.userId,
@@ -413,7 +428,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
           context,
           MaterialPageRoute(
             builder: (context) =>
-                ConfrimOrderPage(userId: widget.userId, orderId: orderId),
+                ConfrimOrderPage(userId: widget.userId, orderId: orderId, UserId: widget.UserId,),
           ),
         );
       } else {

@@ -12,6 +12,13 @@ import 'package:http/http.dart' as http;
 import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 
 class OrderCard extends StatefulWidget {
   final int riderId;
@@ -28,21 +35,29 @@ class _OrderCardState extends State<OrderCard> {
   String url = '';
   List<Product> userOrder = [];
   UserGetOrderResponse? userOrderResponse;
-   var db = FirebaseFirestore.instance;
-FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
+  var db = FirebaseFirestore.instance;
+  FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
+  final DatabaseReference _ordersRef =
+      FirebaseDatabase.instance.ref().child('orders');
+  LatLng _origin = const LatLng(0, 0);
+  LatLng _destination = const LatLng(0, 0);
+  Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {};
 
   void _onItemTapped(int selectedIndex) {
     switch (selectedIndex) {
       case 0:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Orderpagerider(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => Orderpagerider(riderId: widget.riderId)),
         );
         break;
       case 1:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
+          MaterialPageRoute(
+              builder: (context) => ProfileRiderPage(riderId: widget.riderId)),
         );
         break;
     }
@@ -60,13 +75,15 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
   }
 
   Future<void> _fetchOrderDetails() async {
-    final response = await http.get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
+    final response = await http
+        .get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
 
     if (response.statusCode == 200) {
       userOrderResponse = userGetOrderResponseFromJson(response.body);
       log(userOrderResponse.toString());
       userOrder = userOrderResponse!.products;
-      setState(() {}); 
+      log('User Order Response: $userOrderResponse');
+      setState(() {});
     } else {
       print('Failed to load order details: ${response.statusCode}');
     }
@@ -81,8 +98,9 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
           'Order',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
         ),
-       leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+        leading: IconButton(
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -100,7 +118,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                     actions: [
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pop(); 
+                          Navigator.of(context).pop();
                         },
                         child: const Text('No'),
                       ),
@@ -139,7 +157,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
       ),
-      body: SingleChildScrollView(
+  body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -185,7 +203,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                             color: Colors.black,
                             margin: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                         Text(
+                          Text(
                             'Order ID: ${userOrderResponse!.orderId}',
                             style: const TextStyle(
                               fontSize: 18,
@@ -207,40 +225,114 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                 ),
               const SizedBox(height: 20),
 
-              ...userOrder.map((product) => Center(
-                child: SizedBox(
-                  width: 300,
-                  height: 100,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    elevation: 3,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        children: [
-                          Image.network(
-                            product.productPhoto, 
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              product.detail,
-                              style: const TextStyle(fontSize: 16),
+              ...userOrder
+                  .map((product) => Center(
+                        child: SizedBox(
+                          width: 300,
+                          height: 100,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            elevation: 3,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Row(
+                                children: [
+                                  Image.network(
+                                    product.productPhoto,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      product.detail,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
+                      ))
+                  .toList(),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                height: 300,
+                child: FirebaseAnimatedList(
+                  query: _ordersRef,
+                  itemBuilder: (context, snapshot, animation, index) {
+                    if (!snapshot.exists) {
+                      return const Center(child: Text('No orders available.'));
+                    }
+
+                    Map data = snapshot.value as Map;
+                    String orderId = snapshot.key ?? 'Unknown';
+
+                    if (orderId == userOrderResponse?.orderId) {
+                      Map? latLngUser = data['latLngUser'] as Map?;
+                      Map? latLngUserSent = data['latLngUserSent'] as Map?;
+
+                      if (latLngUser != null && latLngUserSent != null) {
+                        double lat1 = latLngUser['latitude'];
+                        double lng1 = latLngUser['longitude'];
+                        double lat2 = latLngUserSent['latitude'];
+                        double lng2 = latLngUserSent['longitude'];
+
+                        double midLat = (lat1 + lat2) / 2;
+                        double midLng = (lng1 + lng2) / 2;
+
+                        Set<Marker> markers = {
+                          Marker(
+                            markerId: MarkerId('userMarker'),
+                            position: LatLng(lat1, lng1),
+                            infoWindow: InfoWindow(title: userOrderResponse!.name, snippet: userOrderResponse!.address),
+                          ),
+                          Marker(
+                            markerId: MarkerId('sentMarker'),
+                            position: LatLng(lat2, lng2),
+                            infoWindow: InfoWindow(title: 'User Sent'),
+                          ),
+                        };
+
+                        Set<Polyline> polylines = {
+                          Polyline(
+                            polylineId: PolylineId('orderRoute'),
+                            points: [LatLng(lat1, lng1), LatLng(lat2, lng2)],
+                            color: Colors.blue,
+                            width: 5,
+                          ),
+                        };
+
+                        return Container(
+                          height: 300,
+                          child: GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(midLat, midLng),
+                              zoom: 13.5,
+                            ),
+                            markers: markers,
+                            polylines: polylines,
+                            scrollGesturesEnabled: true,
+                            zoomGesturesEnabled: true,
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            mapType: MapType.normal,
+                          ),
+                        );
+                      }
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
-              )).toList(),
-              
+              ),
+
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
@@ -251,7 +343,8 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
                   ),
                   child: const Text(
                     'รับงาน',
-                    style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 22, 12, 12)),
+                    style: TextStyle(
+                        fontSize: 18, color: Color.fromARGB(255, 22, 12, 12)),
                   ),
                 ),
               ),
@@ -261,6 +354,7 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
       ),
     );
   }
+
 
   void _showConfirmationDialog() {
     showDialog(
@@ -304,36 +398,36 @@ FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
     );
   }
 
-void ConfrimOrder() {
-  final url = '$API_ENDPOINT/order/updaterider/${widget.riderId}/${widget.orderId}'; 
-  http.put(Uri.parse(url)).then((response) {
-    if (response.statusCode == 200) {
-      var data = {
-        'Status': '2',
-        'riderID': widget.riderId,
-      };
+  void ConfrimOrder() {
+    final url =
+        '$API_ENDPOINT/order/updaterider/${widget.riderId}/${widget.orderId}';
+    http.put(Uri.parse(url)).then((response) {
+      if (response.statusCode == 200) {
+        var data = {
+          'Status': '2',
+          'riderID': widget.riderId,
+        };
 
-      db.collection('orders').doc(widget.orderId.toString()).update(data);
-      realtimeDb.ref('orders/${widget.orderId}').update(data);
+        db.collection('orders').doc(widget.orderId.toString()).update(data);
+        realtimeDb.ref('orders/${widget.orderId}').update(data);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GPSandMapPage(riderId: widget.riderId, orderId: widget.orderId),
-        ),
-      );
-      
-    } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                GPSandMapPage(riderId: widget.riderId, orderId: widget.orderId),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating order: ${response.body}')),
+        );
+      }
+    }).catchError((error) {
+      print("Error: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating order: ${response.body}')),
+        SnackBar(content: Text('Error occurred: $error')),
       );
-    }
-  }).catchError((error) {
-    print("Error: $error");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error occurred: $error')),
-    );
-  });
-}
-
+    });
+  }
 }

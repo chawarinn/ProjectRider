@@ -20,8 +20,9 @@ import 'package:firebase_database/firebase_database.dart';
 
 class ConfrimOrderPage extends StatefulWidget {
   int userId;
+   int UserId;
   int orderId;
-  ConfrimOrderPage({super.key, required this.userId, required this.orderId});
+  ConfrimOrderPage({super.key, required this.userId, required this.orderId, required this.UserId});
 
   @override
   State<ConfrimOrderPage> createState() => _ConfrimOrderPageState();
@@ -134,7 +135,6 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
               'longitude': userData!.long
             },
           };
-
           await db.collection('orders').doc(widget.orderId.toString()).update(data);
           realtimeDb.ref('orders/${widget.orderId}').update(data);
 
@@ -161,7 +161,6 @@ class _ConfrimOrderPageState extends State<ConfrimOrderPage> {
       );
     }
   }
-
 
   Future<void> _fetchOrderDetails() async {
     final response = await http
