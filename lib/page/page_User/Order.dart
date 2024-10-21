@@ -260,7 +260,7 @@ appBar: AppBar(
                                         ? 'รอไรเดอร์รับงาน' 
                                         : order.status == '2' 
                                           ? 'กำลังจัดส่ง' 
-                                          : order.status == '3' 
+                                          : order.status == '4' 
                                           ? 'จัดส่งเสร็จสิ้น' 
                                           : '',
                                       style: const TextStyle(
