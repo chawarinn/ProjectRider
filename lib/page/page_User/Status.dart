@@ -333,7 +333,7 @@ class _StatusPageState extends State<StatusPage> {
                           title: Text('ไรเดอร์รับงาน'),
                           subtitle: Row(
                             children: [
-                             Text(orders['riderID']),
+                             Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),
@@ -375,9 +375,9 @@ class _StatusPageState extends State<StatusPage> {
                           leading:
                               Icon(Icons.check_circle, color:  Colors.green),
                           title: Text('ไรเดอร์รับงาน'),
-                          subtitle: Row(
+                           subtitle: Row(
                             children: [
-                             Text(orders['riderID']),
+                             Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),
@@ -405,7 +405,7 @@ class _StatusPageState extends State<StatusPage> {
                       ],
                     ),
                   );
-                }else if (orders['Status'] == '2'){
+                }else if (orders['Status'] == '4'){
                   return ListTile(
                     title: Text('Order ID: $orderId'),
                     subtitle: Column(
@@ -430,9 +430,9 @@ class _StatusPageState extends State<StatusPage> {
                           leading:
                               Icon(Icons.check_circle, color:  Colors.green),
                           title: Text('ไรเดอร์รับงาน'),
-                          subtitle: Row(
+                           subtitle: Row(
                             children: [
-                             Text(orders['riderID']),
+                             Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),

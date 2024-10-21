@@ -115,7 +115,7 @@ class _RegisterPageUserState extends State<RegisterPageUser> {
         });
       } else {
         var errorData = await response.stream.bytesToString(); 
-        _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}, $errorData");
+        _showAlertDialog(context, "ไม่สามารถสมัครสมาชิกได้ เบอร์นี้ถูกใช้ไปแล้ว ");
       }
     } catch (e) {
       _showAlertDialog(context, "Error during registration: $e");
