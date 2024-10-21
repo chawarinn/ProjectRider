@@ -92,7 +92,7 @@ class _RegisterPageRiderState extends State<RegisterPageRider> {
       });
     } else {
       _showAlertDialog(
-          context, "ไม่สามารถสมัครสมาชิกได้: ${response.statusCode}");
+          context, "ไม่สามารถสมัครสมาชิกได้ เบอร์นี้ถูกใช้ไปแล้ว");
     }
   }
 

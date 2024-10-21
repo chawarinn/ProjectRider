@@ -149,7 +149,7 @@ class _OrderpageriderState extends State<Orderpagerider> {
           child: Column(
             children: [
               SizedBox(
-                height: 400,
+                height: MediaQuery.of(context).size.height * 0.8,
                 child: FirebaseAnimatedList(
                   query: _ordersRef,
                  // Item builder for FirebaseAnimatedList

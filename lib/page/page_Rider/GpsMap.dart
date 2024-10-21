@@ -1,19 +1,19 @@
 import 'dart:developer';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
+import 'package:location/location.dart';
+
 
 class GPSandMapPage extends StatefulWidget {
   final int riderId;
@@ -33,13 +33,15 @@ class _GPSandMapPageState extends State<GPSandMapPage> {
   final FirebaseFirestore db = FirebaseFirestore.instance;
   final FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
   final FirebaseStorage storage = FirebaseStorage.instance;
+  late GoogleMapController mapController;
+  LatLng? _currentPosition;
+  Location _location = Location();
 
-  LatLng latLng = const LatLng(16.246825669508297, 103.25199289277295);
-  final MapController mapController = MapController();
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _initLocation();
     });
   }
 
@@ -217,8 +219,33 @@ Future<void> _updateStatus() async {
   }
 }
 
+  Future<void> _initLocation() async {
+    bool? _serviceEnabled = await _location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await _location.requestService();
+      if (!_serviceEnabled) return; // Early return if the service is not enabled
+    }
 
+    PermissionStatus _permissionGranted = await _location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) return; // Early return if permission is denied
+    }
 
+    // Start listening to location changes
+    _location.onLocationChanged.listen((LocationData currentLocation) {
+      setState(() {
+        _currentPosition = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+      });
+      if (mapController != null) {
+        mapController.animateCamera(CameraUpdate.newLatLng(_currentPosition!));
+      }
+    });
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,12 +283,27 @@ Future<void> _updateStatus() async {
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
       ),
-      body: SingleChildScrollView(
+ body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
               height: 500,
-              
+              child: GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _currentPosition ?? LatLng(13.7563, 100.5018), // Default position
+                  zoom: 11.0,
+                ),
+                myLocationEnabled: true,
+                markers: _currentPosition != null
+                    ? {
+                        Marker(
+                          markerId: MarkerId('current_location'),
+                          position: _currentPosition!,
+                        ),
+                      }
+                    : {},
+              ),
             ),
             _buildImagePicker(),
             _buildImagePicker2(),
