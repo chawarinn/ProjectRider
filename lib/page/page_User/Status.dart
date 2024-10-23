@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mini_project_rider/model/response/rider_get_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_User/Order.dart';
 import 'package:mini_project_rider/page/page_User/OrderReceiver.dart';
@@ -10,6 +11,20 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
+import 'package:mini_project_rider/model/response/user_get_order_res.dart';
+import 'package:mini_project_rider/page/home.dart';
+import 'package:mini_project_rider/page/page_Rider/OrderPageRider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:convert';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 
 class StatusPage extends StatefulWidget {
@@ -30,78 +45,32 @@ class StatusPage extends StatefulWidget {
 
 class _StatusPageState extends State<StatusPage> {
   int? _currentIndex;
+  List<Product> userOrder = [];
+  List<Product> RiderOrder = [];
+  UserGetOrderResponse? userOrderResponse;
+  UserGetOrderResponse? userSentOrderResponse;
+  RiderResponse? riderResponse;
   late GoogleMapController mapController;
   final DatabaseReference _ordersRef =
       FirebaseDatabase.instance.ref().child('orders');
+  String url = '';
 
-  LatLng _center = const LatLng(0, 0);
-  Set<Marker> _markers = {};
-
-  void _updateCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      _center = LatLng(position.latitude, position.longitude);
-      _updateMarkers();
-      mapController.animateCamera(CameraUpdate.newLatLng(_center));
-    });
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _updateMarkers();
-  }
-
-  void _updateMarkers() {
-    _markers.clear();
-
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('currentLocation'),
-        position: _center,
-        infoWindow: const InfoWindow(title: 'ตำแหน่งปัจจุบัน'),
-      ),
-    );
-
-    _markers.add(
-      const Marker(
-        markerId: MarkerId('start'),
-        position: LatLng(13.7563, 100.5018),
-        infoWindow: InfoWindow(title: 'จุดเริ่มต้น'),
-      ),
-    );
-
-    _markers.add(
-      const Marker(
-        markerId: MarkerId('end'),
-        position: LatLng(13.7653, 100.5247),
-        infoWindow: InfoWindow(title: 'จุดปลายทาง'),
-      ),
-    );
-
-    setState(() {});
-  }
+  Set<Marker> markers = {};
+  Set<Polyline> polylines = {};
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.selectedIndex;
-
-    final locationSettings = const LocationSettings(
-      accuracy: LocationAccuracy.high, // กำหนดความแม่นยำ
-      distanceFilter: 10, // อัปเดตทุกครั้งที่เปลี่ยนตำแหน่ง 10 เมตร
-    );
-
-    Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
-      setState(() {
-        _center = LatLng(position.latitude, position.longitude);
-        _updateMarkers(); // อัปเดต Marker ด้วยตำแหน่งใหม่
-        if (mapController != null) {
-          mapController.animateCamera(CameraUpdate.newLatLng(_center));
-        }
-      });
+    super.initState();
+    Configuration.getConfig().then((config) {
+      url = config['apiEndpoint'];
+    }).catchError((err) {
+      log(err.toString());
     });
+    _fetchOrderDetails();
+    _fetchOrderSent();
+    _fetchRider();
   }
 
   void _onItemTapped(int index) {
@@ -138,6 +107,51 @@ class _StatusPageState extends State<StatusPage> {
               builder: (context) => ProfilePage(userId: widget.userId)),
         );
         break;
+    }
+  }
+
+  Future<void> _fetchOrderDetails() async {
+    final response = await http
+        .get(Uri.parse('$API_ENDPOINT/order/addressorder/${widget.orderId}'));
+
+    if (response.statusCode == 200) {
+      userOrderResponse = userGetOrderResponseFromJson(response.body);
+      log(userOrderResponse.toString());
+
+      userOrder = userOrderResponse!.products;
+      setState(() {});
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
+    }
+  }
+
+  Future<void> _fetchOrderSent() async {
+    final response = await http.get(
+        Uri.parse('$API_ENDPOINT/order/addressorderSent/${widget.orderId}'));
+
+    if (response.statusCode == 200) {
+      userSentOrderResponse = userGetOrderResponseFromJson(response.body);
+      log(userSentOrderResponse.toString());
+
+      userOrder = userSentOrderResponse!.products;
+      log(userSentOrderResponse!.toString());
+      setState(() {});
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
+    }
+  }
+
+  Future<void> _fetchRider() async {
+    final response = await http
+        .get(Uri.parse('$API_ENDPOINT/order/addressRider/${widget.orderId}'));
+
+    if (response.statusCode == 200) {
+      riderResponse = riderResponseFromJson(response.body);
+      log(riderResponseFromJson.toString());
+
+      setState(() {});
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
     }
   }
 
@@ -195,7 +209,7 @@ class _StatusPageState extends State<StatusPage> {
           ),
         ],
       ),
-       bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.motorcycle),
@@ -214,7 +228,7 @@ class _StatusPageState extends State<StatusPage> {
             label: 'Profile',
           ),
         ],
-        currentIndex:_currentIndex!,
+        currentIndex: _currentIndex!,
         selectedItemColor: const Color.fromARGB(255, 0, 126, 15),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
@@ -222,26 +236,86 @@ class _StatusPageState extends State<StatusPage> {
       ),
       body: Column(
         children: [
-          // ส่วนของแผนที่
           Container(
             height: 300,
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: CameraPosition(
-                target: _center,
-                zoom: 11.0,
-              ),
-              markers: _markers,
-              polylines: {
-                const Polyline(
-                  polylineId: PolylineId('route'),
-                  points: [
-                    LatLng(13.7563, 100.5018),
-                    LatLng(13.7653, 100.5247),
-                  ],
-                  color: Colors.blue,
-                  width: 5,
-                ),
+            child: FirebaseAnimatedList(
+              query: _ordersRef,
+              itemBuilder: (context, snapshot, animation, index) {
+                if (!snapshot.exists) {
+                  return const Center(child: Text('No orders available.'));
+                }
+
+                Map data = snapshot.value as Map;
+                String orderId = snapshot.key ?? 'Unknown';
+
+                if (orderId == widget.orderId.toString()) {
+                  Map? latLngUser = data['latLngUser'] as Map?;
+                  Map? latLngUserSent = data['latLngUserSent'] as Map?;
+                  Map? latLngRider = data['latLngRider'] as Map?;
+
+                  if (latLngUser != null && latLngUserSent != null) {
+                    double lat1 = latLngUser['latitude'] ?? 0;
+                    double lng1 = latLngUser['longitude'] ?? 0;
+                    double lat2 = latLngUserSent['latitude'] ?? 0;
+                    double lng2 = latLngUserSent['longitude'] ?? 0;
+                    double? lat3 = latLngRider?['latitude'];
+                    double? lng3 = latLngRider?['longitude'];
+
+                    double midLat = (lat1 + lat2) / 2;
+                    double midLng = (lng1 + lng2) / 2;
+
+                    // เพิ่มมาร์กเกอร์ที่ผู้ใช้
+                    if (userOrderResponse != null) {
+                      markers.add(Marker(
+                        markerId: MarkerId('userMarker'),
+                        position: LatLng(lat1, lng1),
+                        infoWindow: InfoWindow(
+                            title: userOrderResponse!.name,
+                            snippet: userOrderResponse!.address),
+                      ));
+                    }
+
+                    if (userSentOrderResponse != null) {
+                      markers.add(Marker(
+                        markerId: MarkerId('sentMarker'),
+                        position: LatLng(lat2, lng2),
+                        infoWindow: InfoWindow(
+                          title: userSentOrderResponse?.name,
+                          snippet: userSentOrderResponse?.address,
+                        ),
+                      ));
+                    }
+
+                    // เช็คว่า latLngRider ไม่เป็น null ก่อนที่จะเพิ่มมาร์กเกอร์
+                    if (lat3 != null && lng3 != null && riderResponse != null) {
+                      markers.add(Marker(
+                        markerId: MarkerId('Rider'),
+                        position: LatLng(lat3, lng3),
+                        infoWindow: InfoWindow(
+                            title: riderResponse!.riderName,
+                            snippet: 'Car: ${riderResponse!.riderCar}'),
+                        icon: BitmapDescriptor.defaultMarkerWithHue(
+                            BitmapDescriptor.hueBlue),
+                      ));
+                    }
+
+                    return Container(
+                      height: 300,
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(midLat, midLng),
+                          zoom: 15,
+                        ),
+                        markers: Set<Marker>.of(
+                            markers), // แสดงมาร์กเกอร์ที่สร้างขึ้น
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        mapType: MapType.normal,
+                      ),
+                    );
+                  }
+                }
+                return const SizedBox.shrink();
               },
             ),
           ),
@@ -269,7 +343,18 @@ class _StatusPageState extends State<StatusPage> {
 
                 if (orders['Status'] == '1') {
                   return ListTile(
-                    title: Text('Order ID: $orderId'),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Order ID: $orderId'),
+                        ElevatedButton(
+                          onPressed: () {
+                            detail();
+                          },
+                          child: Text('รายละเอียด'),
+                        ),
+                      ],
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -289,26 +374,34 @@ class _StatusPageState extends State<StatusPage> {
                           ),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('ไรเดอร์รับงาน'),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('กำลังจัดส่ง'),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('จัดส่งสำเร็จ'),
                         ),
                       ],
                     ),
                   );
-                } else if (orders['Status'] == '2'){
+                } else if (orders['Status'] == '2') {
                   return ListTile(
-                    title: Text('Order ID: $orderId'),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Order ID: $orderId'),
+                        ElevatedButton(
+                          onPressed: () {
+                            detail();
+                          },
+                          child: Text('รายละเอียด'),
+                        ),
+                      ],
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -329,30 +422,39 @@ class _StatusPageState extends State<StatusPage> {
                         ),
                         ListTile(
                           leading:
-                              Icon(Icons.check_circle, color:  Colors.green),
+                              Icon(Icons.check_circle, color: Colors.green),
                           title: Text('ไรเดอร์รับงาน'),
                           subtitle: Row(
                             children: [
-                             Text("riderID : ${orders['riderID'].toString()}"),
+                              Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('กำลังจัดส่ง'),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('จัดส่งสำเร็จ'),
                         ),
                       ],
                     ),
                   );
-                } else if (orders['Status'] == '3'){
+                } else if (orders['Status'] == '3') {
                   return ListTile(
-                    title: Text('Order ID: $orderId'),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Order ID: $orderId'),
+                        ElevatedButton(
+                          onPressed: () {
+                            detail();
+                          },
+                          child: Text('รายละเอียด'),
+                        ),
+                      ],
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -373,11 +475,11 @@ class _StatusPageState extends State<StatusPage> {
                         ),
                         ListTile(
                           leading:
-                              Icon(Icons.check_circle, color:  Colors.green),
+                              Icon(Icons.check_circle, color: Colors.green),
                           title: Text('ไรเดอร์รับงาน'),
-                           subtitle: Row(
+                          subtitle: Row(
                             children: [
-                             Text("riderID : ${orders['riderID'].toString()}"),
+                              Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),
@@ -397,17 +499,26 @@ class _StatusPageState extends State<StatusPage> {
                           ),
                         ),
                         ListTile(
-                          leading:
-                              Icon(Icons.check_circle, color: Colors.grey),
+                          leading: Icon(Icons.check_circle, color: Colors.grey),
                           title: Text('จัดส่งสำเร็จ'),
-                          
                         ),
                       ],
                     ),
                   );
-                }else if (orders['Status'] == '4'){
+                } else if (orders['Status'] == '4') {
                   return ListTile(
-                    title: Text('Order ID: $orderId'),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Order ID: $orderId'),
+                        ElevatedButton(
+                          onPressed: () {
+                            detail();
+                          },
+                          child: Text('รายละเอียด'),
+                        ),
+                      ],
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -428,11 +539,11 @@ class _StatusPageState extends State<StatusPage> {
                         ),
                         ListTile(
                           leading:
-                              Icon(Icons.check_circle, color:  Colors.green),
+                              Icon(Icons.check_circle, color: Colors.green),
                           title: Text('ไรเดอร์รับงาน'),
-                           subtitle: Row(
+                          subtitle: Row(
                             children: [
-                             Text("riderID : ${orders['riderID'].toString()}"),
+                              Text("riderID : ${orders['riderID'].toString()}"),
                             ],
                           ),
                         ),
@@ -469,7 +580,7 @@ class _StatusPageState extends State<StatusPage> {
                       ],
                     ),
                   );
-                }else {
+                } else {
                   return const SizedBox.shrink();
                 }
               },
@@ -477,6 +588,163 @@ class _StatusPageState extends State<StatusPage> {
           ),
         ],
       ),
+    );
+  }
+
+  detail() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('รายละเอียด'),
+          content: SingleChildScrollView(
+            child: Container(
+              // ตรวจสอบว่า userOrderResponse และ userSentOrderResponse ไม่เป็น null
+              child: userOrderResponse != null && userSentOrderResponse != null
+                  ? Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (riderResponse != null) ...[
+                              ClipOval(
+                                child: Image.network(
+                                  riderResponse!.riderPhoto,
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Text(
+                                'Rider: ${riderResponse!.riderName}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Phone: ${riderResponse!.riderPhone}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              SizedBox(
+                                width: 300,
+                                child: Text(
+                                  'Car: ${riderResponse!.riderCar}',
+                                  style: const TextStyle(fontSize: 16),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                            ] else ...[
+                              // ถ้า riderResponse เป็น null ให้แสดงข้อความนี้
+                              Text(
+                                'ยังไม่มี rider รับงาน',
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    color:
+                                        Colors.red), // ปรับสีข้อความตามต้องการ
+                              ),
+                            ],
+                            Container(
+                              width: 300,
+                              height: 1,
+                              color: Colors.black,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            Text(
+                              'Sender: ${userSentOrderResponse!.name}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Phone: ${userSentOrderResponse!.phone}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                'Address: ${userSentOrderResponse!.address}',
+                                style: const TextStyle(fontSize: 16),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                            ),
+                            Container(
+                              width: 300,
+                              height: 1,
+                              color: Colors.black,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            Text(
+                              'Receiver: ${userOrderResponse!.name}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Phone: ${userOrderResponse!.phone}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                'Address: ${userOrderResponse!.address}',
+                                style: const TextStyle(fontSize: 16),
+                                softWrap: true,
+                                overflow: TextOverflow.visible,
+                              ),
+                            ),
+                            Container(
+                              width: 300,
+                              height: 1,
+                              color: Colors.black,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            Text(
+                              'Product:',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            ...userOrderResponse!.products.map((product) => Row(
+                                  children: [
+                                    Image.network(
+                                      product.productPhoto,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Text(
+                                      product.detail,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
+                                )),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ปิด popup
+              },
+              child: Text('ปิด'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

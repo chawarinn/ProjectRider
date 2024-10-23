@@ -253,20 +253,32 @@ appBar: AppBar(
                                           ],
                                         ),
                                       ),
-                                      Align(
-          alignment: Alignment.bottomRight,
-                                    child: Text(
-                                      order.status == '1' 
-                                        ? 'รอไรเดอร์รับงาน' 
-                                        : order.status == '2' 
-                                          ? 'กำลังจัดส่ง' 
-                                          : order.status == '4' 
-                                          ? 'จัดส่งเสร็จสิ้น' 
-                                          : '',
-                                      style: const TextStyle(
-                                          fontSize: 16, fontWeight: FontWeight.normal),
-                                    ),
-                                  ),
+                                    Align(
+  alignment: Alignment.bottomRight,
+  child: GestureDetector( // ใช้ GestureDetector แทน Text
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StatusPage(
+            userId: widget.userId,
+            selectedIndex: _selectedIndex,
+            orderId: order.orderId,
+          ),
+        ),
+      );
+    },
+    child: Text(
+      'รายละเอียด',
+      style: const TextStyle(
+        fontSize: 16, 
+        fontWeight: FontWeight.normal,
+        color: Colors.blue, // สามารถเพิ่มสีให้ดูเหมือนลิงค์
+      ),
+    ),
+  ),
+),
+
                                     ],
                                   ),
                                 ),

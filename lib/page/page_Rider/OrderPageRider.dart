@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mini_project_rider/config/config.dart';
+import 'package:mini_project_rider/config/internet_config.dart';
 import 'package:mini_project_rider/model/response/rider_get_order_res.dart';
 import 'package:mini_project_rider/page/home.dart';
 import 'package:mini_project_rider/page/page_Rider/ProfileRiderPage.dart';
@@ -64,7 +65,7 @@ class _OrderpageriderState extends State<Orderpagerider> {
 
   Future<void> _fetchOrderRider() async {
     try {
-      final response = await http.get(Uri.parse('$url/riders/order'));
+      final response = await http.get(Uri.parse('$API_ENDPOINT/riders/order'));
 
       if (response.statusCode == 200) {
         riderOrderResponse = riderGetOrderResponseFromJson(response.body);
@@ -79,7 +80,7 @@ class _OrderpageriderState extends State<Orderpagerider> {
         log('Failed to load order details: ${response.statusCode}');
       }
     } catch (e) {
-      log('Error fetching order details: $e');
+      log('Error fetching order details:');
     }
   }
 

@@ -178,67 +178,73 @@ class _LoginPageState extends State<LoginPage> {
 
   // ฟังก์ชันสำหรับแสดง Popup
   void showRoleSelectionDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: loginU,
-                child: SizedBox(
-                  width: 130,
-                  height: 100,
-                  child: Card(
-                    color: const Color.fromARGB(255, 10, 151, 24),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/Person.webp',
-                          height: 60,
-                          width: 60,
-                        ),
-                        const Text('User'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: loginR,
-                child: SizedBox(
-                  width: 130,
-                  height: 100,
-                  child: Card(
-                    color: const Color.fromARGB(255, 10, 151, 24),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/images/Delivery.png',
-                          height: 60,
-                          width: 60,
-                        ),
-                        const Text('Rider'),
-                      ],
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: SingleChildScrollView( 
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8, 
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: loginU,
+                  child: SizedBox(
+                    width: 115, 
+                    height: 100,
+                    child: Card(
+                      color: const Color.fromARGB(255, 10, 151, 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/Person.webp',
+                            height: 60,
+                            width: 60,
+                          ),
+                          const Text('User'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                GestureDetector(
+                  onTap: loginR,
+                  child: SizedBox(
+                    width: 115, 
+                    height: 100,
+                    child: Card(
+                      color: const Color.fromARGB(255, 10, 151, 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/Delivery.png',
+                            height: 60,
+                            width: 60,
+                          ),
+                          const Text('Rider'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
 
   void loginU() async {
     log(phoneCtl.text);

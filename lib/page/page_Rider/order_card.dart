@@ -35,6 +35,7 @@ class _OrderCardState extends State<OrderCard> {
   String url = '';
   List<Product> userOrder = [];
   UserGetOrderResponse? userOrderResponse;
+  UserGetOrderResponse? userSentOrderResponse;
   var db = FirebaseFirestore.instance;
   FirebaseDatabase realtimeDb = FirebaseDatabase.instance;
   final DatabaseReference _ordersRef =
@@ -72,6 +73,7 @@ class _OrderCardState extends State<OrderCard> {
       log(err.toString());
     });
     _fetchOrderDetails();
+    _fetchOrderSent();
   }
 
   Future<void> _fetchOrderDetails() async {
@@ -88,7 +90,20 @@ class _OrderCardState extends State<OrderCard> {
       print('Failed to load order details: ${response.statusCode}');
     }
   }
+  Future<void> _fetchOrderSent() async {
+    final response = await http.get(
+        Uri.parse('$API_ENDPOINT/order/addressorderSent/${widget.orderId}'));
 
+    if (response.statusCode == 200) {
+      userSentOrderResponse = userGetOrderResponseFromJson(response.body);
+      log(userSentOrderResponse.toString());
+
+      userOrder = userSentOrderResponse!.products;
+      setState(() {});
+    } else {
+      print('Failed to load order details: ${response.statusCode}');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -164,7 +179,7 @@ class _OrderCardState extends State<OrderCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              if (userOrderResponse != null)
+              if (userOrderResponse != null && userSentOrderResponse != null)
                 SizedBox(
                   child: Card(
                     shape: RoundedRectangleBorder(
@@ -177,12 +192,39 @@ class _OrderCardState extends State<OrderCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Name: ${userOrderResponse!.name}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        'Sender: ${userSentOrderResponse!.name}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Phone: ${userSentOrderResponse!.phone}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: 300,
+                        child: Text(
+                          'Address: ${userSentOrderResponse!.address}',
+                          style: const TextStyle(fontSize: 16),
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ),
+                      Container(
+                        width: 300,
+                        height: 1,
+                        color: Colors.black,
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      Text(
+                        'Receiver: ${userOrderResponse!.name}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                           Text(
                             'Phone: ${userOrderResponse!.phone}',
                             style: const TextStyle(fontSize: 16),
@@ -354,51 +396,87 @@ class _OrderCardState extends State<OrderCard> {
       ),
     );
   }
+void _showConfirmationDialog() {
+  // แสดง dialog ยืนยันการรับงาน
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Center(child: Text('ยืนยันการรับงาน')),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // ปิด dialog
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: const Color.fromARGB(255, 178, 178, 178),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                child: Text('NO'),
+              ),
+              SizedBox(width: 20),
+              TextButton(
+                onPressed: () {
+                  // ดึงข้อมูลคำสั่งจาก Firebase
+                  _ordersRef.onValue.listen((DatabaseEvent event) {
+                    final snapshot = event.snapshot;
+
+                    if (!snapshot.exists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No orders available.')),
+                      );
+                      return; // หากไม่มีคำสั่งให้หยุดการทำงาน
+                    }
+
+                    Map<dynamic, dynamic> orders = snapshot.value as Map<dynamic, dynamic>;
+
+                    // ตรวจสอบแต่ละคำสั่ง
+                    orders.forEach((key, value) {
+                      int orderId = int.tryParse(key.toString()) ?? 0;
+
+                      if (orderId == widget.orderId) {
+                        // ถ้าคำสั่งตรงกับ orderId ของ widget
+                        if (value['Status'] == '1') {
+                          Navigator.of(context).pop(); // ปิด dialog
+                          ConfrimOrder(); // เรียกใช้ ConfirmOrder
+                        } else {
+                           Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Orderpagerider(riderId: widget.riderId),
+                            ),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Order นี้มีคนรับแล้ว')),
+                          );
+                        }
+                      }
+                    });
+                  });
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color.fromARGB(255, 178, 178, 178),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                child: Text('YES'),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
-  void _showConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(child: Text('ยืนยันการรับงาน')),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Color.fromARGB(255, 255, 255, 255),
-                    backgroundColor: const Color.fromARGB(255, 178, 178, 178),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  ),
-                  child: Text('NO'),
-                ),
-                SizedBox(width: 20),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    ConfrimOrder();
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Color.fromARGB(255, 255, 255, 255),
-                    backgroundColor: Color.fromARGB(255, 178, 178, 178),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  ),
-                  child: Text('YES'),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void ConfrimOrder() {
+    
     final url =
         '$API_ENDPOINT/order/updaterider/${widget.riderId}/${widget.orderId}';
     http.put(Uri.parse(url)).then((response) {
@@ -410,7 +488,7 @@ class _OrderCardState extends State<OrderCard> {
 
         db.collection('orders').doc(widget.orderId.toString()).update(data);
         realtimeDb.ref('orders/${widget.orderId}').update(data);
-
+        
         Navigator.push(
           context,
           MaterialPageRoute(

@@ -205,7 +205,7 @@ class _AddOrderPageState extends State<AddOrderPage> {
           ),
         ],
       ),
-   body: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -213,35 +213,40 @@ class _AddOrderPageState extends State<AddOrderPage> {
             children: [
               const SizedBox(height: 20),
               SizedBox(
+                width: double.infinity, // ใช้ความกว้างของหน้าจอทั้งหมด
                 child: Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0)),
                   elevation: 5,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment
+                          .start, 
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Name : ${userData?.name ?? "Loading..."}',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Phone : ${userData?.phone ?? "Loading..."}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 5),
-                            SizedBox(
-                              width: 300,
-                              child: Text(
+                        Expanded(
+                        
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Name : ${userData?.name ?? "Loading..."}',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Phone : ${userData?.phone ?? "Loading..."}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
                                 'Address : ${userData?.address ?? "Loading..."}',
                                 style: const TextStyle(fontSize: 16),
                                 softWrap: true,
                                 overflow: TextOverflow.visible,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -262,7 +267,9 @@ class _AddOrderPageState extends State<AddOrderPage> {
                           Marker(
                             markerId: MarkerId('userLocation'),
                             position: LatLng(userData!.lat, userData!.long),
-                            infoWindow: InfoWindow(title: userData!.name, snippet: userData!.address),
+                            infoWindow: InfoWindow(
+                                title: userData!.name,
+                                snippet: userData!.address),
                           ),
                         },
                         myLocationEnabled: true,
@@ -427,8 +434,11 @@ class _AddOrderPageState extends State<AddOrderPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                ConfrimOrderPage(userId: widget.userId, orderId: orderId, UserId: widget.UserId,),
+            builder: (context) => ConfrimOrderPage(
+              userId: widget.userId,
+              orderId: orderId,
+              UserId: widget.UserId,
+            ),
           ),
         );
       } else {
